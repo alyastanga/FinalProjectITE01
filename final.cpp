@@ -98,7 +98,7 @@ public:
 };
 
 int main() {
-    TicketingSystem system;
+    TicketingSystem sysstem;
 
     // Creating some users
     Parent parent1("John Doe");
