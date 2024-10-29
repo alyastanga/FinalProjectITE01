@@ -23,7 +23,7 @@ int main() {
     cout << "                 Welcome              \n";
     cout << "           Precious University        \n";
     cout << "               Students Inq           \n";
-    cout << "\nMenu \n";
+    cout << "\nMenu";
     cout << "\n\n1. Login\n2. Register\n3. Forgot Password\n4. Exit\n";
     cout << "Enter the number of your choice: ";
     cin>> choice;
