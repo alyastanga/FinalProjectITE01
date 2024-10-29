@@ -1,7 +1,14 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <cmath>
+#include <cstdlib>
 using namespace std;
+
+struct Ticket
+{
+    string studentName, studentId, concern, date, professor, status;
+};
 
 void registerUser();
 void login();
@@ -12,7 +19,7 @@ void resolveTicket();
 void viewTickets();
 void studentsInterface();
 void professorsInterface();
-void notifTickets();
+void notification();
 
 
 int main() {
@@ -23,7 +30,7 @@ int main() {
     cout << "                 Welcome              \n";
     cout << "           Precious University        \n";
     cout << "               Students Inq           \n";
-    cout << "\nMenu";
+    cout << "\nMenu \n";
     cout << "\n\n1. Login\n2. Register\n3. Forgot Password\n4. Exit\n";
     cout << "Enter the number of your choice: ";
     cin>> choice;
@@ -46,7 +53,6 @@ int main() {
     while(choice != 4);
     return 0;
 }
-
 
 class User
 {
@@ -76,6 +82,7 @@ class User
 };
 
 User user;
+Ticket ticket;
 void registerUser()
 {
     cout<<"Enter username: "; user.setUsername();
@@ -102,16 +109,16 @@ void login()
         case 1: 
             {int count = 0;
             string id, pass;
-            string luser, lpass, lrole, lid;
+            string lpass, lrole, studentId;
             cout<<"Enter username: "; cin>> id;
             cout<<"Enter Password: "; cin>> pass;
 
             ifstream input("accounts.txt");
             if(input.is_open())
             {   
-                while(input>>luser>>lpass>>lrole>>lid)
+                while(input>>ticket.studentName>>lpass>>lrole>>studentId)
                 {
-                    if(luser == id && lpass == pass)
+                    if(ticket.studentName == id && lpass == pass)
                     {
                         count = 1;
                         system("clear");
@@ -135,16 +142,16 @@ void login()
         case 2: 
         {   int count = 0;
             string id, pass;
-            string luser, lpass, lrole, lid;
+            string lpass, lrole, lid;
             cout<<"Enter username: "; cin>> id;
             cout<<"Enter Password: "; cin>> pass;
 
             ifstream input("accounts.txt");
             if(input.is_open())
             {   
-                while(input>>luser>>lpass>>lrole>>lid)
+                while(input>>ticket.professor>>lpass>>lrole>>lid)
                 {
-                    if(luser == id && lpass == pass)
+                    if(ticket.professor == id && lpass == pass)
                     {
                         count = 1;
                         system("clear");
@@ -174,18 +181,35 @@ void login()
 
 void retrievePassword()
 {
-    //Delacruz
+    int count = 0;
+    string fuse, user, pass, role, sid;
+    cout<<"Enter username: "; cin>>fuse;
 
-
-
-
-
+    ifstream ret("accounts.txt");
+    if(ret.is_open())
+    {
+        while(ret>> user>>pass>>role>>sid)
+        {
+            if(user == fuse)
+            {
+                count = 1;
+                break;
+            }
+        }
+        ret.close();
+    }
+    if (count == 1){
+        cout<<"Your password is: "<<pass<<endl;
+    }
+    else{
+        cout<<"Username not found!\n";
+    }
 }
 
 void studentsInterface()
 {
     int action;
-    cout<<"Welcome, student "<<user.getUsername()<<endl;
+    cout<<"Welcome, student "<<ticket.studentName<<endl;
     cout<<"1. Create Ticket\n2. View Tickets\n3. Logout\n";
     cout<<"Enter the number of your choice: ";
     cin>>action;
@@ -208,7 +232,7 @@ void studentsInterface()
 void professorsInterface()
 {
     int action;
-    cout<<"Welcome, professor "<<user.getUsername()<<endl;
+    cout<<"Welcome, professor "<<ticket.professor<<endl;
     cout<<"1. View Ticket\n2. Resolve Tickets\n3. Logout\n";
     cout<<"Enter the number of your choice: ";
     cin>>action;
@@ -229,73 +253,27 @@ void professorsInterface()
 }
 
 void viewTickets(){
-    string username = user.getUsername();
-    string role = user.getRole();
-    string line;
-    
-    if (role == "s") {  // Student view
-        string filename = username + "_tickets.txt";
-        ifstream ticketFile(filename);
-        if (!ticketFile.is_open()) {
-            cout << "No tickets found.\n";
-            studentsInterface();
-            return;
-        }
-        
-        cout << "\n--- Your Tickets ---\n";
-        cout << "----------------------------------------\n";
-        while (getline(ticketFile, line)) {
-            cout << line << endl;
-        }
-        ticketFile.close();
-        
-        cout << "----------------------------------------\n";
-        cout << "\nPress Enter to continue...";
-        cin.ignore();
-        cin.get();
-        studentsInterface();
-    }
-    else if (role == "p") {  // Professor view
-        ifstream ticketFiles("professor_tickets.txt");
-        
-        if (!ticketFiles.is_open()) {
-            cout << "No tickets found.\n";
-            professorsInterface();
-            return;
-        }
-        
-        string studentName, studentId, concern, date, professor, status;
-        cout << "\n--- Open Tickets Assigned to You ---\n";
-        cout << "----------------------------------------\n";
-        
-        while (ticketFiles >> studentName >> studentId >> concern >> date >> professor >> status) {
-            if (professor == username && status == "open") {
-                cout << "Student Name: " << studentName << endl;
-                cout << "Student ID: " << studentId << endl;
-                cout << "Concern: " << concern << endl;
-                cout << "Date: " << date << endl;
-                cout << "Status: " << status << endl;
-                cout << "----------------------------------------\n";
-            }
-        }
-        ticketFiles.close();
-        
-        cout << "\nPress Enter to continue...";
-        cin.ignore();
-        cin.get();
-        professorsInterface();
-    }
+    //Hanz mapua
+    //dapat may if else kung student or professor
+    //kung student, dapat yung ticket na ginawa nya lang ang makikita nya
+    //kung professor, dapat lahat ng ticket na sinend lang sa kanya na open ang makikita nya
 }
+
 void addTickets(){
     //Aby gael
     //dapat bawat students may kanya kanyang text file tapos dun naka store yung mga concerns nila
     //(student name, id, concern, date&time (if possible), professor, status(open/resolved))
+    //dapat may unique id yung bawat ticket
+
+
 }
 
 void resolveTicket(){
     //Kurt raneses
     //
 }
-void notifTickets(){
-    //Marcaida
+void notification(){
+    //Marcus
+    //
 }
+
