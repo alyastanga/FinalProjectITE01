@@ -3,6 +3,8 @@
 #include <string>
 #include <cmath>
 #include <cstdlib>
+#include <ctime> 
+#include <limits>
 using namespace std;
 
 struct Ticket
@@ -81,6 +83,14 @@ class User
 
 };
 
+void clearScreen() {
+    #ifdef _WIN32
+        system("cls"); // Windows
+    #else
+        system("clear"); // Unix/Linux/Mac
+    #endif
+}
+
 User user;
 Ticket ticket;
 void registerUser()
@@ -95,8 +105,10 @@ void registerUser()
         reg << user.getUsername()<< "\t"<< user.getPassword()<<"\t"<<user.getRole()<<"\t"<<user.getSid()<<endl;
         reg.close();
         cout<<"Registration Successful!\n";
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
         system("clear");
     }
+   
 }
 
 void login()
@@ -315,16 +327,33 @@ void addTickets(){
     //dapat bawat students may kanya kanyang text file tapos dun naka store yung mga concerns nila
     //(student name, id, concern, date&time (if possible), professor, status(open/resolved))
     //dapat may unique id yung bawat ticket
-
-
 }
 
 void resolveTicket(){
     //Kurt raneses
-    //
-}
-void notification(){
-    //Marcus
-    //
-}
+    //void resolveTicket() {
+    }
+void notifTickets() {
+    string professor = user.getUsername();  
+    string studentName, studentId, concern, date, ticketStatus, assignedProfessor;
+    int newTicketCount = 0;
 
+    ifstream ticketFiles("professor_tickets.txt");
+
+    if (ticketFiles.is_open()) {
+        while (ticketFiles >> studentName >> studentId >> concern >> date >> assignedProfessor >> ticketStatus) {
+            if (assignedProfessor == professor && ticketStatus == "open") {
+                newTicketCount++;  
+            }
+        }
+        ticketFiles.close();
+
+        if (newTicketCount > 0) {
+            cout << "\nYou have " << newTicketCount << " new tickets to resolve!\n";
+        } else {
+            cout << "\nNo new tickets at the moment.\n";
+        }
+    } else {
+        cout << "Error opening the tickets file.\n";
+    }
+}
