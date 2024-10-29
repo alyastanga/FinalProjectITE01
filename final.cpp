@@ -253,12 +253,63 @@ void professorsInterface()
 }
 
 void viewTickets(){
-    //Hanz mapua
-    //dapat may if else kung student or professor
-    //kung student, dapat yung ticket na ginawa nya lang ang makikita nya
-    //kung professor, dapat lahat ng ticket na sinend lang sa kanya na open ang makikita nya
+    string username = user.getUsername();
+    string role = user.getRole();
+    string line;
+    
+    if (role == "s") {  // Student view
+        string filename = username + "_tickets.txt";
+        ifstream ticketFile(filename);
+        if (!ticketFile.is_open()) {
+            cout << "No tickets found.\n";
+            studentsInterface();
+            return;
+        }
+        
+        cout << "\n--- Your Tickets ---\n";
+        cout << "----------------------------------------\n";
+        while (getline(ticketFile, line)) {
+            cout << line << endl;
+        }
+        ticketFile.close();
+        
+        cout << "----------------------------------------\n";
+        cout << "\nPress Enter to continue...";
+        cin.ignore();
+        cin.get();
+        studentsInterface();
+    }
+    else if (role == "p") {  // Professor view
+        ifstream ticketFiles("professor_tickets.txt");
+        
+        if (!ticketFiles.is_open()) {
+            cout << "No tickets found.\n";
+            professorsInterface();
+            return;
+        }
+        
+        string studentName, studentId, concern, date, professor, status;
+        cout << "\n--- Open Tickets Assigned to You ---\n";
+        cout << "----------------------------------------\n";
+        
+        while (ticketFiles >> studentName >> studentId >> concern >> date >> professor >> status) {
+            if (professor == username && status == "open") {
+                cout << "Student Name: " << studentName << endl;
+                cout << "Student ID: " << studentId << endl;
+                cout << "Concern: " << concern << endl;
+                cout << "Date: " << date << endl;
+                cout << "Status: " << status << endl;
+                cout << "----------------------------------------\n";
+            }
+        }
+        ticketFiles.close();
+        
+        cout << "\nPress Enter to continue...";
+        cin.ignore();
+        cin.get();
+        professorsInterface();
+    }
 }
-
 void addTickets(){
     //Aby gael
     //dapat bawat students may kanya kanyang text file tapos dun naka store yung mga concerns nila
