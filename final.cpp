@@ -21,7 +21,7 @@ void resolveTicket();
 void viewTickets();
 void studentsInterface();
 void professorsInterface();
-void notification();
+void notifTickets();
 void clearscreen() {
     #ifdef _WIN32
         system("cls"); // Windows
@@ -29,6 +29,7 @@ void clearscreen() {
         system("clear"); // Unix/Linux/Mac
     #endif
 }
+void analytics();
 
 int main() {
     int choice;
@@ -82,7 +83,7 @@ public:
         cin >> password;
     }
 
-    void setRole(const string& r) { 
+    void setRole(const string& r) { // Accepts a string argument
         role = r;
     }
 
@@ -99,7 +100,7 @@ void registerUser() {
     string roleInput;
     cout << "Enter role ((s)student/(p)professor): ";
     cin >> roleInput;
-    user.setRole(roleInput); 
+    user.setRole(roleInput); // Set role based on input
     cout << "Enter student no. if professor enter 0: "; user.setSid();
 
     ofstream reg("accounts.txt", ios::app);
@@ -116,18 +117,19 @@ void registerUser() {
 void login() {   
     int r;
     cout << "Choose: \n1. Student\n2. Professor\n";
+    cout << "Enter the number of your choice: ";
     cin >> r;
     switch (r) {
         case 1: {  // Student login
             int count = 0;
             string id, pass;
-            string lpass, lrole, studentId;
+            string lpass, lrole;
             cout << "Enter username: "; cin >> id;
             cout << "Enter Password: "; cin >> pass;
 
             ifstream input("accounts.txt");
             if (input.is_open()) {   
-                while (input >> ticket.studentName >> lpass >> lrole >> studentId) {
+                while (input >> ticket.studentName >> lpass >> lrole >> ticket.studentId) {
                     if (ticket.studentName == id && lpass == pass) {
                         user.setRole(lrole); // Set the role after successful login
                         count = 1;
@@ -212,6 +214,9 @@ void retrievePassword()
 void studentsInterface() {
     int action;
     cout << "Welcome, student " << ticket.studentName << endl;
+    cout<<"\n";
+    notifTickets();
+    cout<<"\n";
     cout << "1. Create Ticket\n2. View Tickets\n3. Logout\n";
     cout << "Enter the number of your choice: ";
     cin >> action;
@@ -234,6 +239,9 @@ void professorsInterface()
 {
     int action;
     cout<<"Welcome, professor "<<ticket.professor<<endl;
+    cout<<"\n";
+    notifTickets();
+    cout<<"\n";
     cout<<"1. View Ticket\n2. Resolve Tickets\n3. Logout\n";
     cout<<"Enter the number of your choice: ";
     cin>>action;
@@ -306,63 +314,207 @@ void addTickets(){
     //dapat bawat students may kanya kanyang text file tapos dun naka store yung mga concerns nila
     //(student name, id, concern, date&time (if possible), professor, status(open/resolved))
     //dapat may unique id yung bawat ticket
-    
-}
+    string concern, professor;
+    cout << "Enter your concern: ";
+    cin.ignore();
+    getline(cin, concern);
+    cout << "Enter the professor's name: ";
+    getline(cin, professor);
 
-void resolveTicket(){
-    //Kurt raneses
-    //void resolveTicket() {
+    // Get the current date and time
+    time_t now = time(0);
+    tm *ltm = localtime(&now);
+    char date[20];
+    strftime(date, sizeof(date), "%Y-%m-%d %H:%M:%S", ltm);
+
+    //ticketno
+    srand(time(0));
+    int ticketno = rand() % 1000 + 1;
+    string ticketnoStr = to_string(ticketno);
+
+    if (ticket.studentName.empty() || ticket.studentId.empty()) {
+        cout << "Error: Student name or ID is not initialized.\n";
+        return;
+    }
+
+    string stufile = ticket.studentName + "_tickets.txt";
+    ofstream ticketFile(stufile, ios::app);
+    if (ticketFile.is_open()) {
+        ticketFile << "Student: " << ticket.studentName << endl;
+        ticketFile << "Student ID: " << ticket.studentId << endl;
+        ticketFile << "Ticket ID: " << ticketno << endl;
+        ticketFile << "Concern: " << concern << endl;
+        ticketFile << "Date: " << date << endl;
+        ticketFile << "Professor: " << professor << endl;
+        ticketFile << "Status: open" << endl;
+        ticketFile << "----------------------------------------" << endl;
+        ticketFile.close();
+        cout << "Ticket added successfully!\n";
+    } else {
+        cout << "Unable to open file.\n";
     }
     
+    string profile = professor + "_tickets.txt";
+    ofstream proticket(profile, ios::app);
+    if (proticket.is_open()) {
+        proticket << "Student: " << ticket.studentName << endl;
+        proticket << "Student ID: " << ticket.studentId << endl;
+        proticket << "Ticket ID: " << ticketno << endl;
+        proticket << "Professor: " << professor << endl;
+        proticket << "Concern: " << concern << endl;
+        proticket << "Date: " << date << endl;
+        proticket << "Status: open" << endl;
+        proticket << "----------------------------------------" << endl;
+        proticket.close();
+        cout << "Ticket sent to professor!\n";
+    } else {
+        cout << "Unable to open file.\n";
+    }
+    studentsInterface();
+}
+
+void resolveTicket() {
+    string ticketId;
+    string studentName;
+    cout << "Enter the ticket ID you want to resolve: ";
+    cin >> ticketId;
+    cout << "Enter the student name: ";
+    cin>>studentName;
+
+    ifstream inputFile(ticket.professor + "_tickets.txt");
+    ofstream tempFile("temp_tickets.txt");  // Temporary file for modified data
+    bool found = false;
+
+    if (inputFile.is_open() && tempFile.is_open()) {
+        string line;
+        while (getline(inputFile, line)) {
+            if (line.find("Ticket ID: " + ticketId) != string::npos) {  // If the ticket ID matches
+                tempFile << line << endl;  // Write the ticket ID line
+                getline(inputFile, line);  // Read the next line (Concern)
+                tempFile << line << endl;  // Write the Concern line
+                getline(inputFile, line);  // Read the next line (Date)
+                tempFile << line << endl;  // Write the Date line
+                getline(inputFile, line);  // Read the next line (Professor)
+                tempFile << line << endl;  // Write the Professor line
+                getline(inputFile, line);  // Read the next line (Status)
+                line.replace(line.find("open"), 4, "resolved");  // Update the status
+                tempFile << line << endl;  // Write the updated Status line
+                found = true;
+                cout << "Ticket " << ticketId << " resolved successfully!\n";
+            } else {
+                tempFile << line << endl;  // Write to the temporary file
+            }
+        }
+        inputFile.close();
+        tempFile.close();
+
+        if (remove((ticket.professor + "_tickets.txt").c_str()) != 0) {
+            perror("Error deleting old file");
+        } else if (rename("temp_tickets.txt", (ticket.professor + "_tickets.txt").c_str()) != 0) {
+            perror("Error renaming new file");
+        } else {
+            if (!found) {
+                cout << "Ticket ID " << ticketId << " not found.\n";
+            }
+        }
+    } else {
+        cout << "Error opening file.\n";
+    }
+
+    ifstream resolveStudentfile(studentName + "_tickets.txt");
+    ofstream tempoFile("tempo_tickets.txt");  // Temporary file for modified data
+    bool count = false;
+
+    if (resolveStudentfile.is_open() && tempoFile.is_open()) {
+        string line;
+        while (getline(resolveStudentfile, line)) {
+            if (line.find("Ticket ID: " + ticketId) != string::npos) {  // If the ticket ID matches
+                tempoFile << line << endl;  // Write the ticket ID line
+                getline(resolveStudentfile, line);  // Read the next line (Concern)
+                tempoFile << line << endl;  // Write the Concern line
+                getline(resolveStudentfile, line);  // Read the next line (Date)
+                tempoFile << line << endl;  // Write the Date line
+                getline(resolveStudentfile, line);  // Read the next line (Professor)
+                tempoFile << line << endl;  // Write the Professor line
+                getline(resolveStudentfile, line);  // Read the next line (Status)
+                line.replace(line.find("open"), 4, "resolved");  // Update the status
+                tempoFile << line << endl;  // Write the updated Status line
+                count = true;
+                cout << "Ticket " << ticketId << " resolved successfully!\n";
+            } else {
+                tempoFile << line << endl;  // Write to the temporary file
+            }
+        }
+        resolveStudentfile.close();
+        tempoFile.close();
+
+        if (remove((studentName + "_tickets.txt").c_str()) != 0) {
+            perror("Error deleting old file");
+        } else if (rename("tempo_tickets.txt", (studentName + "_tickets.txt").c_str()) != 0) {
+            perror("Error renaming new file");
+        } else {
+            if (!count) {
+                cout << "Ticket ID " << ticketId << " not found.\n";
+            }
+        }
+    } else {
+        cout << "Error opening file.\n";
+    }
+
+    professorsInterface();  // Return to the professor interface
+}
+
+
+
 void notifTickets() {
     string username = user.getUsername();  
     string role = user.getRole(); 
-    string studentName, studentId, concern, date, ticketStatus, assignedProfessor;
+    string line, status;
+    status = "Status: open";
     int newTicketCount = 0;
 
     if (role == "s") { 
-       
-        string studentFile = username + "_tickets.txt";
-        ifstream ticketFile(studentFile);
+        string studentFile = ticket.studentName + "_tickets.txt";
+        ifstream stunotif(studentFile);
 
-        if (ticketFile.is_open()) {
-            while (ticketFile >> studentName >> concern >> date >> assignedProfessor >> ticketStatus) {
-                if (ticketStatus == "resolved") {
+        if (stunotif.is_open()) {
+            while (getline(stunotif, line)) {
+                if (line.find("Status: resolved") != string::npos) {
                     newTicketCount++;  
+                    break;
                 }
             }
-            ticketFile.close();
-
-            if (newTicketCount > 0) {
-                cout << "\nYou have " << newTicketCount << " resolved ticket(s)!\n";
-            } else {
-                cout << "\nNo resolved tickets at the moment.\n";
-            }
+            stunotif.close();
+        }
+        if (newTicketCount > 0) {
+            cout << "\nYou have " << newTicketCount << " resolved ticket(s)!\n";
         } else {
-            cout << "Error opening your tickets file.\n";
+            cout << "\nNo resolved tickets at the moment.\n";
         }
     } else if (role == "p") { 
-       
-        string professorFile = username + "_tickets.txt";
-        ifstream ticketFile(professorFile);
+        string professorFile = ticket.professor + "_tickets.txt";
+        ifstream pronotif(professorFile);
 
-        if (ticketFile.is_open()) {
-            while (ticketFile >> studentName >> studentId >> concern >> date >> ticketStatus) {
-                if (ticketStatus == "open") {
+        if (pronotif.is_open()) {
+            while (getline(pronotif, line)) {
+                if (line.find(status) != string::npos) {
                     newTicketCount++;  
+                    break;
                 }
             }
-            ticketFile.close();
-
-            if (newTicketCount > 0) {
-                cout << "\nYou have " << newTicketCount << " new tickets to resolve!\n";
-            } else {
-                cout << "\nNo new tickets at the moment.\n";
-            }
+            pronotif.close();
+        }
+        if (newTicketCount > 0) {
+            cout << "\nYou have " << newTicketCount << " new tickets to resolve!\n";
         } else {
-            cout << "Error opening your tickets file.\n";
+            cout << "\nNo new tickets at the moment.\n";
         }
     } else {
         cout << "Invalid role!\n";
     }
+}
+
+
+void analytics(){
+    
 }
