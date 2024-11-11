@@ -65,15 +65,16 @@ int main() {
 
 class User {
 private: 
-    string username, password, role, sid;
+    string username, password, role, sid, department;
 public:
-    User(): username(""), password(""), role(""), sid("") {}
-    User(string uname, string pass, string r, string id) : username(uname), password(pass), role(r), sid(id) {}
+    User(): username(""), password(""), role(""), sid(""), department("") {}
+    User(string uname, string pass, string r, string id, string d) : username(uname), password(pass), role(r), sid(id), department(d) {}
 
     string getUsername() const { return username; }
     string getPassword() const { return password; }
     string getRole() const { return role; }
     string getSid() const { return sid; }
+    string getDepartment() const { return department; }
 
     void setUsername() {
         cin >> username;
@@ -86,17 +87,48 @@ public:
     void setRole(const string& r) { // Accepts a string argument
         role = r;
     }
-
+    
+    void setDepartment(const string& d) { // Accepts a string argument
+        department = d;
+    }
     void setSid() {
         cin >> sid;
     }
+    
 };
 
 User user;
 Ticket ticket;
 void registerUser() {
     cout << "Enter username: "; user.setUsername();
+    
     cout << "Enter password: "; user.setPassword();
+    
+    string departmentInput;
+    int departmentInputInt;
+    
+    cout << "Enter Department-Options(Enter # only):\n1. College of Engineering and Architecture\n2. College of Computer Studies\n3. College of Business Education\n4. College of Arts and Sciences\nDepartment: ";
+    cin >> departmentInput;
+    
+    try {
+        departmentInputInt = stoi(departmentInput); // Convert to int
+    } catch (invalid_argument&) {
+        cout << "Invalid input! Please enter a number.\n";
+        return; // Stop the function if input is not a number
+    }    
+    
+    switch (departmentInputInt) {
+        case 1: user.setDepartment("College of Engineering and Architecture");
+        break;
+        case 2: user.setDepartment("College of Information Technology Education");
+        break;
+        case 3: user.setDepartment("College of Business Education");
+        break;
+        case 4: user.setDepartment("College of Arts and Sciences");
+        break;
+        default: cout << "Invalid input!\n";
+
+    }
     string roleInput;
     cout << "Enter role ((s)student/(p)professor): ";
     cin >> roleInput;
@@ -105,7 +137,7 @@ void registerUser() {
 
     ofstream reg("accounts.txt", ios::app);
     if (reg.is_open()) {
-        reg << user.getUsername() << "\t" << user.getPassword() << "\t" << user.getRole() << "\t" << user.getSid() << endl;
+        reg << user.getUsername() << "\t" << user.getPassword() << "\t" << user.getDepartment() << "\t" << user.getRole() << "\t" << user.getSid() << endl;
         reg.close();
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
         clearscreen();
@@ -119,69 +151,60 @@ void login() {
     cout << "Choose: \n1. Student\n2. Professor\n";
     cout << "Enter the number of your choice: ";
     cin >> r;
-    switch (r) {
-        case 1: {  // Student login
-            int count = 0;
-            string id, pass;
-            string lpass, lrole;
-            cout << "Enter username: "; cin >> id;
-            cout << "Enter Password: "; cin >> pass;
+    
+    // Declare common variables for username and password
+    string id, pass, lpass, lrole, lid;
+    int departmentInputInt;
+    bool isLoggedIn = false;
 
-            ifstream input("accounts.txt");
-            if (input.is_open()) {   
-                while (input >> ticket.studentName >> lpass >> lrole >> ticket.studentId) {
-                    if (ticket.studentName == id && lpass == pass) {
-                        user.setRole(lrole); // Set the role after successful login
-                        count = 1;
-                        clearscreen();
-                        break;
-                    }
-                }
-                input.close();
-                if (count == 1) {
-                    cout << "Login Successful!\n";
-                    studentsInterface(); // Navigate to student interface
-                } else {
-                    cout << "Invalid username or password!\n";
+    // Prompt for username and password
+    cout << "Enter username: "; 
+    cin >> id;
+    cout << "Enter Password: "; 
+    cin >> pass;
+
+    ifstream input("accounts.txt");
+    if (input.is_open()) {   
+        if (r == 1) {  // Student login
+            while (input >> ticket.studentName >> lpass >> departmentInputInt >> lrole >> ticket.studentId) {
+                if (ticket.studentName == id && lpass == pass && lrole == "s") { // Check role for student
+                    user.setRole(lrole); // Set role after successful login
+                    isLoggedIn = true;
+                    clearscreen();
+                    break;
                 }
             }
-        }
-        break;
-
-        case 2: {  // Professor login
-            int count = 0;
-            string id, pass;
-            string lpass, lrole, lid;
-            cout << "Enter username: "; cin >> id;
-            cout << "Enter Password: "; cin >> pass;
-
-            ifstream input("accounts.txt");
-            if (input.is_open()) {   
-                while (input >> ticket.professor >> lpass >> lrole >> lid) {
-                    if (ticket.professor == id && lpass == pass) {
-                        user.setRole(lrole); // Set the role after successful login
-                        count = 1;
-                        clearscreen();
-                        break;
-                    }
-                }
-                input.close();
-                if (count == 1) {
-                    cout << "Login Successful!\n";
-                    professorsInterface(); // Navigate to professor interface
-                } else {
-                    cout << "Invalid username or password!\n";
+        } else if (r == 2) {  // Professor login
+            while (input >> ticket.professor >> lpass >> departmentInputInt >> lrole >> lid) {
+                if (ticket.professor == id && lpass == pass && lrole == "p") { // Check role for professor
+                    user.setRole(lrole); // Set role after successful login
+                    isLoggedIn = true;
+                    clearscreen();
+                    break;
                 }
             }
-        }
-        break;
-
-        default: 
+        } else {
             cout << "Invalid choice!\n";
             login(); // Re-prompt for login
-            break;
+            return;
+        }
+        input.close();
+
+        if (isLoggedIn) {
+            cout << "Login Successful!\n";
+            if (r == 1) {
+                studentsInterface(); // Navigate to student interface
+            } else {
+                professorsInterface(); // Navigate to professor interface
+            }
+        } else {
+            cout << "Invalid username or password!\n";
+        }
+    } else {
+        cout << "Unable to open accounts file.\n";
     }
 }
+
 
 
 void retrievePassword()
@@ -193,7 +216,7 @@ void retrievePassword()
     ifstream ret("accounts.txt");
     if(ret.is_open())
     {
-        while(ret>> user>>pass>>role>>sid)
+        while(ret >> user >> pass >> role >> sid)
         {
             if(user == fuse)
             {
@@ -212,8 +235,23 @@ void retrievePassword()
 }
 
 void studentsInterface() {
+    string departmentName;
+    int departmentInputInt;
+    switch (departmentInputInt) {
+        case 1:
+            departmentName = "Computer Science";
+            break;
+        case 2:
+            departmentName = "Information Technology";
+            break;
+        case 3:
+            departmentName = "Information Systems";
+            break;
+        default:
+            departmentName = "Unknown Department";
+    }
     int action;
-    cout << "Welcome, student " << ticket.studentName << endl;
+    cout << "Welcome, student " << ticket.studentName << " of " << departmentName << endl;
     cout<<"\n";
     notifTickets();
     cout<<"\n";
@@ -230,15 +268,30 @@ void studentsInterface() {
         main();
         clearscreen(); 
         break;
-        default: cout << "Invalid input!\n"; studentsInterface(); 
+        default: cout << "Invalid input!\n"; 
+        studentsInterface(); 
         break;
     }
 }
 
-void professorsInterface()
-{
+void professorsInterface() {
+    string departmentName;
+    int departmentInputInt;
+    switch (departmentInputInt) {
+        case 1:
+            departmentName = "Computer Science";
+            break;
+        case 2:
+            departmentName = "Information Technology";
+            break;
+        case 3:
+            departmentName = "Information Systems";
+            break;
+        default:
+            departmentName = "Unknown Department";
+    }
     int action;
-    cout<<"Welcome, professor "<<ticket.professor<<endl;
+    cout<<"Welcome, professor "<< ticket.professor << " of " << departmentName << endl;
     cout<<"\n";
     notifTickets();
     cout<<"\n";
@@ -314,7 +367,7 @@ void addTickets(){
     //dapat bawat students may kanya kanyang text file tapos dun naka store yung mga concerns nila
     //(student name, id, concern, date&time (if possible), professor, status(open/resolved))
     //dapat may unique id yung bawat ticket
-    string concern, professor;
+    string concern, professor, departmentName;
     cout << "Enter your concern: ";
     cin.ignore();
     getline(cin, concern);
@@ -340,6 +393,7 @@ void addTickets(){
     string stufile = ticket.studentName + "_tickets.txt";
     ofstream ticketFile(stufile, ios::app);
     if (ticketFile.is_open()) {
+        ticketFile << "Department: " << departmentName << endl;
         ticketFile << "Student: " << ticket.studentName << endl;
         ticketFile << "Student ID: " << ticket.studentId << endl;
         ticketFile << "Ticket ID: " << ticketno << endl;
@@ -357,6 +411,7 @@ void addTickets(){
     string profile = professor + "_tickets.txt";
     ofstream proticket(profile, ios::app);
     if (proticket.is_open()) {
+        proticket << "Department: " << departmentName << endl;
         proticket << "Student: " << ticket.studentName << endl;
         proticket << "Student ID: " << ticket.studentId << endl;
         proticket << "Ticket ID: " << ticketno << endl;
