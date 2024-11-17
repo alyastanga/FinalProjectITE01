@@ -478,17 +478,18 @@ getline(cin, additionalDetails);
         cout << "Unable to open file.\n";
     }
     
-    string profile = professor + "_tickets.txt";
+    string profile = ticket.professor + "_tickets.txt";
     ofstream proticket(profile, ios::app);
     if (proticket.is_open()) {
         proticket << "Department: " << ticket.department << endl;
         proticket << "Student: " << ticket.studentName << endl;
         proticket << "Student ID: " << ticket.studentId << endl;
         proticket << "Ticket ID: " << ticketno << endl;
-        proticket << "Professor: " << professor << endl;
         proticket << "Concern: " << concern << endl;
         proticket << "Additional Details: " << additionalDetails << endl;
-        proticket << "Date: " << date << endl;
+        proticket << "Date of Inquiry: " << date << endl;
+        proticket << "Scheduled Meeting: " << ticket.scheduledMeeting << endl;
+        proticket << "Professor: " << ticket.professor << endl;
         proticket << "Status: open" << endl;
         proticket << "----------------------------------------" << endl;
         proticket.close();
@@ -526,93 +527,117 @@ void resolveTicket() {
     cout << "Enter the ticket ID you want to resolve: ";
     cin >> ticketId;
     cout << "Enter the student name: ";
-    cin>>studentName;
+    cin >> studentName;
 
+    // Professor's file update
     ifstream inputFile(ticket.professor + "_tickets.txt");
-    ofstream tempFile("temp_tickets.txt");  // Temporary file for modified data
+    ofstream tempFile("temp_tickets.txt");
     bool found = false;
 
     if (inputFile.is_open() && tempFile.is_open()) {
         string line;
         while (getline(inputFile, line)) {
-            if (line.find("Ticket ID: " + ticketId) != string::npos) {  // If the ticket ID matches
-                tempFile << line << endl;  // Write the ticket ID line
-                getline(inputFile, line);  // Read the next line (Concern)
-                tempFile << line << endl;  // Write the Concern line
-                getline(inputFile, line);  // Read the next line (Date)
-                tempFile << line << endl;  // Write the Date line
-                getline(inputFile, line);  // Read the next line (Professor)
-                tempFile << line << endl;
-                getline(inputFile, line);  // Read the next line (Professor)
-                tempFile << line << endl;   // Write the Professor line
-                getline(inputFile, line);  // Read the next line (Status)
-                line.replace(line.find("open"), 5, "resolved");  // Update the status
-                tempFile << line << endl;  // Write the updated Status line
+            if (line.find("Ticket ID: " + ticketId) != string::npos) {
                 found = true;
-                cout << "Ticket " << ticketId << " resolved successfully!\n";
+                tempFile << line << endl;  // Write the ticket ID line
+
+                for(int i = 0; i < 8; i++) {
+                    getline(inputFile, line);
+                    tempFile << line << endl;
+                }
+
+                getline(inputFile, line);
+                size_t openPos = line.find("open");
+                if(openPos != string::npos) {
+                    line.replace(openPos, 4, "resolved");
+                }
+                tempFile << line << endl;  // Write the updated Status line
+                
+                // Add empty line after the ticket
+                tempFile << endl;
             } else {
                 tempFile << line << endl;  // Write to the temporary file
+                if(line.empty()) {
+                    tempFile << endl;  // Preserve empty lines between tickets
+                }
             }
         }
         inputFile.close();
         tempFile.close();
 
-        if (remove((ticket.professor + "_tickets.txt").c_str()) != 0) {
-            perror("Error deleting old file");
-        } else if (rename("temp_tickets.txt", (ticket.professor + "_tickets.txt").c_str()) != 0) {
-            perror("Error renaming new file");
+        if (!found) {
+            cout << "Ticket ID " << ticketId << " not found in professor's file.\n";  // Corrected error message
         } else {
-            if (!found) {
-                cout << "Ticket ID " << ticketId << " not found.\n";
+            if (remove((ticket.professor + "_tickets.txt").c_str()) != 0) {
+                perror("Error deleting old file");
+            } else if (rename("temp_tickets.txt", (ticket.professor + "_tickets.txt").c_str()) != 0) {
+                perror("Error renaming new file");
+            } else {
+                cout << "Ticket " << ticketId << " resolved successfully in professor's file!\n";
             }
         }
     } else {
-        cout << "Error opening file.\n";
+        cout << "Error opening professor's file.\n";
     }
-
+    
+    //Student's file update
     ifstream resolveStudentfile(studentName + "_tickets.txt");
-    ofstream tempoFile("tempo_tickets.txt");  // Temporary file for modified data
+    ofstream tempoFile("tempo_tickets.txt");
     bool count = false;
 
     if (resolveStudentfile.is_open() && tempoFile.is_open()) {
         string line;
         while (getline(resolveStudentfile, line)) {
-            if (line.find("Ticket ID: " + ticketId) != string::npos) {  // If the ticket ID matches
-                tempoFile << line << endl;  // Write the ticket ID line
-                getline(resolveStudentfile, line);  // Read the next line (Concern)
-                tempoFile << line << endl;  // Write the Concern line
-                getline(resolveStudentfile, line);  // Read the next line (Date)
-                tempoFile << line << endl;  // Write the Date line
-                getline(resolveStudentfile, line);  // Read the next line (Professor)
-                tempoFile << line << endl; 
-                getline(resolveStudentfile, line);  // Read the next line (Professor)
-                tempoFile << line << endl;  // Write the Professor line
-                getline(resolveStudentfile, line);  // Read the next line (Status)
-                line.replace(line.find("open"), 5, "resolved");  // Update the status
-                tempoFile << line << endl;  // Write the updated Status line
+            if (line.find("Ticket ID: " + ticketId) != string::npos) {
                 count = true;
-                cout << "Ticket " << ticketId << " resolved successfully!\n";
+                tempoFile << line << endl;  // Write the ticket ID line
+                
+                for(int i = 0; i < 8; i++) {
+                    getline(resolveStudentfile, line);
+                    tempoFile << line << endl;
+                }
+
+                getline(resolveStudentfile, line);
+                size_t openPos = line.find("open");
+                if(openPos != string::npos) {
+                    line.replace(openPos, 4, "resolved");
+                }
+                tempFile << line << endl;  // Write the updated Status line
+                
+                // Add empty line after the ticket
+                tempoFile << endl;
             } else {
                 tempoFile << line << endl;  // Write to the temporary file
+                if(line.empty()) {
+                    tempoFile << endl;  // Preserve empty lines between tickets
+                }
             }
         }
         resolveStudentfile.close();
         tempoFile.close();
 
-        if (remove((studentName + "_tickets.txt").c_str()) != 0) {
-            perror("Error deleting old file");
-        } else if (rename("tempo_tickets.txt", (studentName + "_tickets.txt").c_str()) != 0) {
-            perror("Error renaming new file");
+        if (!count) {
+            cout << "Ticket ID " << ticketId << " not found in student's file.\n";
         } else {
-            if (!count) {
-                cout << "Ticket ID " << ticketId << " not found.\n";
+            if (remove((studentName + "_tickets.txt").c_str()) != 0) {
+                perror("Error deleting old file");
+            } else if (rename("tempo_tickets.txt", (studentName + "_tickets.txt").c_str()) != 0) {
+                perror("Error renaming new file");
+            } else {
+                cout << "Ticket " << ticketId << " resolved successfully in student's file!\n";
             }
         }
     } else {
-        cout << "Error opening file.\n";
+        cout << "Error opening student's file.\n";
     }
+
+    // Add a pause before clearing screen
+    cout << "\nPress Enter to continue...";
+    cin.ignore();
+    cin.get();
+    
     clearscreen();
-    professorsInterface();  // Return to the professor interface
+    professorsInterface();
 }
 
 
