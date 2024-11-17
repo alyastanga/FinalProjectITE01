@@ -6,11 +6,17 @@
 #include <ctime> 
 #include <limits>
 #include <iomanip>
+#include <vector>
+#include <algorithm>
 using namespace std;
 
 struct Ticket
 {
-    string studentName, studentId, concern, date, professor, status, role, department;
+    string studentName, studentId, concern, date, professor, status, role, department, scheduledMeeting;
+};
+struct Sched {
+    string days[7] = {"Monday: ", "Tuesday: ", "Wednesday: ", "Thursday: ", "Friday: ", "Saturday: ", "Sunday: "};
+    string time[7];
 };
 
 void registerUser();
@@ -31,6 +37,9 @@ void clearscreen() {
     #endif
 }
 void analytics();
+void profSched();
+void chooseProf();
+void chooseDay();
 
 int main() {
     clearscreen();
@@ -114,6 +123,7 @@ public:
 
 User user;
 Ticket ticket;
+Sched sched;
 void registerUser() {
     cout << "Registration\n\n";
     string uname;
@@ -150,10 +160,13 @@ void registerUser() {
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
         getline(cin, sidInput);
         user.setSid(sidInput);
+        ticket.studentName = uname;
         break;
         case 'p': user.setRole("p"); 
         sidInput = "0";
         user.setSid(sidInput);
+        ticket.professor = uname;
+        profSched();
         break;
         default: cout << "Invalid input!\n";
         break;
@@ -165,6 +178,7 @@ void registerUser() {
         reg.close();
         clearscreen();
         cout << "Registration Successful!\n";
+        main();
     }
 }
 
@@ -423,8 +437,8 @@ switch (concernChoice) {
 
 cout << "Enter additional details about your concern: ";
 getline(cin, additionalDetails); 
-cout << "Enter the professor's name: ";
-getline(cin, professor);
+//cout << "Enter the professor's name: ";
+//getline(cin, professor);
 // Continue with the rest of the code...
 
     // Get the current date and time
@@ -442,7 +456,8 @@ getline(cin, professor);
         cout << "Error: Student name or ID is not initialized.\n";
         return;
     }
-
+    chooseProf();
+    chooseDay();
     string stufile = ticket.studentName + "_tickets.txt";
     ofstream ticketFile(stufile, ios::app);
     if (ticketFile.is_open()) {
@@ -452,8 +467,9 @@ getline(cin, professor);
         ticketFile << "Ticket ID: " << ticketno << endl;
         ticketFile << "Concern: " << concern << endl;
         ticketFile << "Additional Details: " << additionalDetails << endl;
-        ticketFile << "Date: " << date << endl;
-        ticketFile << "Professor: " << professor << endl;
+        ticketFile << "Date of Inquiry: " << date << endl;
+        ticketFile << "Scheduled Meeting: " << ticket.scheduledMeeting << endl;
+        ticketFile << "Professor: " << ticket.professor << endl;
         ticketFile << "Status: open" << endl;
         ticketFile << "----------------------------------------" << endl;
         ticketFile.close();
@@ -734,5 +750,149 @@ void analytics(){
         clearscreen();
         professorsInterface();
     }
-
     
+    void profSched() {
+    cout << "Enter your Schedule (hh:mm[in] - hh:mm[out]):\n";
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    for (int i = 0; i < 7; ++i) {
+        cout << sched.days[i] << ": ";
+        getline(cin, sched.time[i]);
+        }
+
+    ofstream pSched("Schedule.txt", ios::app);
+    if (pSched.is_open()) {
+        pSched << ticket.professor << endl;
+        for (int i = 0; i < 7; ++i) {
+            pSched << sched.days[i] << sched.time[i] << endl;   
+        }
+        pSched << endl;
+        pSched.close();
+        clearscreen();
+        cout << "Your Schedule for the week has been saved!\n";
+    } else {cout << "Error opening file!";}
+}
+
+bool isDayOfWeek(const string& line, const Sched& sched) {
+    for (const auto& day : sched.days) {
+        if (line.find(day) == 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void chooseProf() {
+    int profChoice;
+    cout << "Which professor? \n";
+    ifstream profs("Schedule.txt");
+    if (!profs) {
+        cerr << "Error: File could not be opened." << endl;
+        return;
+    }
+
+    string line;
+    vector<string> professors;
+    Sched sched;
+
+    while (getline(profs, line)) {
+        if (!line.empty() && !isDayOfWeek(line, sched)) {
+            professors.push_back(line);
+        }
+    }
+    profs.close();
+
+    sort(professors.begin(), professors.end());
+    cout << "Professors:" << endl;
+    for (size_t i = 0; i < professors.size(); i++) {
+        cout << "(" << i + 1 << ") " << professors[i] << endl;
+    continue;
+    }
+    while (true) {
+        cin >> profChoice;
+        
+        if (cin.fail()) {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "Please enter a number: " << endl;
+            continue;
+        }
+
+        if (profChoice >= 1 && profChoice <= static_cast<int>(professors.size())) {
+            ticket.professor = professors[profChoice - 1];
+            break;
+        } else {
+            cout << "Please enter a number between 1 and " << professors.size() << endl;
+        }
+    }
+}
+
+void chooseDay() {
+    cout << "Choose the available time with Professor " << ticket.professor << ":\n";
+
+
+    ifstream profs("Schedule.txt");
+    if (!profs) {
+        cerr << "Error: File could not be opened." << endl;
+        return;
+    }
+
+    const vector<pair<string, int>> days = {
+        {"Monday:", 1},
+        {"Tuesday:", 2},
+        {"Wednesday:", 3},
+        {"Thursday:", 4},
+        {"Friday:", 5},
+        {"Saturday:", 6},
+        {"Sunday:", 7}
+    };
+
+    string line;
+    bool foundProfSection = false;
+    vector<string> availableDays;
+
+    while (getline(profs, line)) {
+        if (line == ticket.professor) {
+            foundProfSection = true;
+            continue;
+        }
+
+        if (foundProfSection) {
+            for (const auto& [day, number] : days) {
+                if (line.find(day) == 0) {
+                    cout << "(" << number << ") " << line << endl;
+                    availableDays.push_back(line);
+                    break;
+                }
+            }
+
+            if (line.empty()) break;
+        }
+    }
+
+    if (!foundProfSection) {
+        cerr << "Error: Professor's schedule not found in the file." << endl;
+        profs.close();
+        return;
+    }
+
+    int dayChoice;
+    while (true) {
+        cin >> dayChoice;
+        
+        if (cin.fail()) {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "Please enter a valid number." << endl;
+            continue;
+        }
+
+        if (dayChoice >= 1 && dayChoice <= availableDays.size()) {
+            ticket.scheduledMeeting = availableDays[dayChoice - 1];
+            break;
+        } else {
+            cout << "Please enter a number between 1 and " << availableDays.size() << endl;
+        }
+    }
+
+    profs.close();
+}
