@@ -827,7 +827,7 @@ void chooseProf() {
 }
 
 void chooseDay() {
-    cout << "Choose the available time with Professor " << ticket.professor << ":\n";
+    cout << "Choose the available time with Professor " << ticket.professor << ":(Enter # only)\n";
 
 
     ifstream profs("Schedule.txt");
