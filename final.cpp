@@ -755,7 +755,7 @@ void analytics(){
     cout << "Enter your Schedule (hh:mm[in] - hh:mm[out]):\n";
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
     for (int i = 0; i < 7; ++i) {
-        cout << sched.days[i] << ": ";
+        cout << sched.days[i];
         getline(cin, sched.time[i]);
         }
 
