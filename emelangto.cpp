@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <ctime> 
+#include <vector>
 #include <limits>
 #include <iomanip>
 using namespace std;
@@ -113,6 +114,7 @@ public:
     void setSid(const string& id) { // Accepts a string argument
         sid = id;
     }
+
     
 };
 
@@ -137,7 +139,7 @@ void registerUser() {
     
     char departmentInputInt;
     do{
-    cout << setw(3)<< " "<<"Enter Department-Options(Enter # only):\n ";
+    cout << setw(3)<< " "<<"Enter Department-Options(Enter # only):\n";
     cout<< setw(3) << " "<<"(1) College of Engineering and Architecture\n";
     cout<< setw(3) << " "<<"(2) College of Computer Studies\n";
     cout<< setw(3) << " "<<"(3) College of Business Education\n";
@@ -186,6 +188,7 @@ void registerUser() {
         default: cout << "Invalid input!\n";
         break;
     }
+    string accounts[5] = {user.getUsername(), user.getPassword(), user.getDepartment(), user.getRole(), user.getSid()};
     if(roleInput == 'p'){
     ofstream sched("schedules.txt", ios::app);
         if(sched.is_open()){
@@ -202,14 +205,15 @@ void registerUser() {
             cout<< "Schedule added successfully!\n";
         }
     }
+
     ofstream reg("accounts.txt", ios::app);
     if (reg.is_open()) {
-        reg << user.getUsername() << setw(10) << user.getPassword() << setw(10) << user.getDepartment() << setw(10) << user.getRole() << setw(10) << user.getSid() << endl;
+        reg << accounts[0] << setw(10) << accounts[1] << setw(10) << accounts[2] << setw(10) << accounts[3] << setw(10) <<accounts[4] << endl;
         reg.close(); 
+        }
         clearscreen();
         cout << "Registration Successful!\n";
         main();
-    }
 }
 
 
@@ -257,13 +261,13 @@ void login() {
 void retrievePassword()
 {
     int count = 0;
-    string fuse, user, pass, role, sid;
+    string fuse, user, pass, role, sid, dep;
     cout<<"Enter username: "; cin>>fuse;
 
     ifstream ret("accounts.txt");
     if(ret.is_open())
     {
-        while(ret >> user >> pass >> role >> sid)
+        while(ret >> user >> pass >> dep >> role >> sid)
         {
             if(user == fuse)
             {
@@ -756,42 +760,42 @@ void analytics(){
         float A9percentage = (static_cast<float>(A9) / totalTix) * 100;
         float A10percentage = (static_cast<float>(A10) / totalTix) * 100;
         float totalTixPercentage = (static_cast<float>(totalTix) / totalTix) * 100;
-        cout << "\n--------------------------------------------------------------------------------\n";
-        cout << setw(25) << " " << "Concern Analytics\n\n";
-        cout << left << setw(40) << "Concern Categories" << setw(10) << "Frequency" << setw(10) << "Percentage" << endl;
+        cout << "\n------------------------------------------------------------------------\n";
+        cout << setw(30) << " " << "Concern Analytics\n\n";
+        cout << left << setw(40) << "Concern Categories" << setw(20) << "Frequency" << setw(10) << "Percentage" << endl;
         if(A1 > 0){
-            cout<< left << setw(44) <<"Grades and Assessments: "<<setw(8)<<A1 << setw(0)<< fixed << setprecision(2) << A1percentage<< "%" <<endl;
+            cout<< left << setw(44) <<"Grades and Assessments: "<<setw(20)<<A1 << setw(0)<< fixed << setprecision(2) << A1percentage<< "%" <<endl;
         }   
         if(A2 > 0){
-            cout << left << setw(44) << "Course Material and Content: " << setw(8) << A2 << setw(0) << fixed << setprecision(2) << A2percentage << "%" << endl;
+            cout << left << setw(44) << "Course Material and Content: " << setw(20) << A2 << setw(0) << fixed << setprecision(2) << A2percentage << "%" << endl;
         }
         if(A3 > 0){
-            cout << left << setw(44) << "Assignment Deadlines and Extensions: " << setw(8) << A3 << setw(0) << fixed << setprecision(2) << A3percentage << "%" << endl;
+            cout << left << setw(44) << "Assignment Deadlines and Extensions: " << setw(20) << A3 << setw(0) << fixed << setprecision(2) << A3percentage << "%" << endl;
         }
         if(A4 > 0){
-            cout << left << setw(44) << "Class Schedule and Attendance: " << setw(8) << A4 << setw(0) << fixed << setprecision(2) << A4percentage << "%" << endl;
+            cout << left << setw(44) << "Class Schedule and Attendance: " << setw(20) << A4 << setw(0) << fixed << setprecision(2) << A4percentage << "%" << endl;
         }
         if(A5 > 0){
-            cout << left << setw(44) << "Exam Schedules and Conflicts: " << setw(8) << A5 << setw(0) << fixed << setprecision(2) << A5percentage << "%" << endl;
+            cout << left << setw(44) << "Exam Schedules and Conflicts: " << setw(20) << A5 << setw(0) << fixed << setprecision(2) << A5percentage << "%" << endl;
         }
         if(A6 > 0){
-            cout << left << setw(44) << "Feedback and Improvement: " << setw(8) << A6 << setw(0) << fixed << setprecision(2) << A6percentage << "%" << endl;
+            cout << left << setw(44) << "Feedback and Improvement: " << setw(20) << A6 << setw(0) << fixed << setprecision(2) << A6percentage << "%" << endl;
         }
         if(A7 > 0){
-            cout << left << setw(44) << "Academic Advising: " << setw(8) << A7 << setw(0) << fixed << setprecision(2) << A7percentage << "%" << endl;
+            cout << left << setw(44) << "Academic Advising: " << setw(20) << A7 << setw(0) << fixed << setprecision(2) << A7percentage << "%" << endl;
         }
         if(A8 > 0){
-            cout << left << setw(44) << "Personal Issues Affecting Academic Performance: " << setw(8) << A8 << setw(0) << fixed << setprecision(2) << A8percentage << "%" << endl;
+            cout << left << setw(44) << "Personal Issues Affecting Academic Performance: " << setw(20) << A8 << setw(0) << fixed << setprecision(2) << A8percentage << "%" << endl;
         }
         if(A9 > 0){
-            cout << left << setw(44) << "Technical Issues: " << setw(8) << A9 << setw(0) << fixed << setprecision(2) << A9percentage << "%" << endl;
+            cout << left << setw(44) << "Technical Issues: " << setw(20) << A9 << setw(0) << fixed << setprecision(2) << A9percentage << "%" << endl;
         }
         if(A10 > 0){
-            cout << left << setw(44) << "General Inquiries: " << setw(8) << A10 << setw(0) << fixed << setprecision(2) << A10percentage << "%" << endl;
+            cout << left << setw(44) << "General Inquiries: " << setw(20) << A10 << setw(0) << fixed << setprecision(2) << A10percentage << "%" << endl;
         }
-        cout<< left << setw(44) <<"Total Tickets: "<<setw(8) << totalTix<< fixed << setprecision(2) << totalTixPercentage <<endl;
+        cout<< left << setw(44) <<"Total Tickets: "<<setw(20) << totalTix<< fixed << setprecision(2) << totalTixPercentage <<endl;
 
-        cout << "\n--------------------------------------------------------------------------------\n";
+        cout << "\n------------------------------------------------------------------------\n";
         cout << "\nPress Enter to continue...";
         cin.get();
         cout << "\n";
@@ -834,74 +838,160 @@ void analytics(){
         clearscreen();
     }
 
-void enroll(){  
-    cout<<"\n" <<setw(3 )<<" "<< "List of the Professor:\n\n";
+void enroll() {  
+    cout << "\n" << setw(3) << " " << "List of the Professors:\n\n";
     ifstream list("accounts.txt");
     string line, user, pass, dep, role, id;
-    int count = 0, i =0;
+    int count = 0, i = 0;
+    vector<string> professors;
 
-    if(list.is_open()){
-        while(list >> user >> pass >> dep >> role >> id){
-            if(role == "p"){
+    if (list.is_open()) {
+        while (list >> user >> pass >> dep >> role >> id) {
+            if (role == "p") {
                 i = 1 + count++;
-                cout<<"("<<i <<") " <<user<< endl;
-                
+                cout << "(" << i << ") " << user << endl;
+                professors.push_back(user);
             }
         }
-    }list.close();
-    cout<< "\nEnroll to: ";
-    getline(cin, ticket.professor);
+        list.close();
+    }
 
-    ofstream students("Students of " + ticket.professor, ios::app );
-    if(students.is_open()){
-        students << ticket.studentName<<endl;
+    cout << "\nEnroll to (enter professor number): ";
+    int profIndex;
+    cin >> profIndex;
+    cin.ignore(); // Ignore the newline character left in the input buffer
+
+    if (profIndex > 0 && profIndex <= professors.size()) {
+        ticket.professor = professors[profIndex - 1];
+    } else {
+        cout << "Invalid selection.\n";
+        return;
+    }
+
+    ofstream students("StudentsOf_" + ticket.professor + ".txt", ios::app);
+    if (students.is_open()) {
+        students << ticket.studentName << endl;
         students.close();
     }
-    cout<<"Sucessfuly Enrolled to professor, " <<ticket.professor<<"\n\n";
-    cout<<"Press Enter to continue...\n";
+
+    cout << "Successfully Enrolled to professor, " << ticket.professor << "\n\n";
+    cout << "Press Enter to continue...\n";
     cin.get();
     clearscreen();
     studentsInterface();
 }
 
-void Messenger(){
-    if(ticket.role == "s"){
-        cout<<"Enter professor: "; getline(cin, ticket.professor);
-        ifstream convo(ticket.studentName + "_" + ticket.professor +".txt");
-        string line;
-        if(convo.is_open()){
-            while(getline(convo, line)){
-                cout<<line<<endl;
+void Messenger() {
+    string exit;
+    string user;
+    // Student to Professor
+    if (ticket.role == "s") {
+        cout << "Professors:\n";
+        ifstream proflist("accounts.txt");
+        string line, users, pass, dep, role, id;
+        int count = 0, i = 0;
+        vector<string> professors;
+
+        if (proflist.is_open()) {
+            while (proflist >> users >> pass >> dep >> role >> id) {
+                if (role == "p") {
+                    i = 1 + count++;
+                    cout << "(" << i << ") " << users << endl;
+                    professors.push_back(users);
+                }
             }
-        }convo.close();
-    cout<<"\nEnter a message: "; getline(cin, message.msg);
-    ofstream chat(ticket.studentName + "_" + ticket.professor +".txt", ios::app);
-        if(chat.is_open()){
-            
-                chat<<setw(30)<<" "<<ticket.studentName<<endl;
-                chat<<setw(30)<<" " << message.msg<<endl;
-            }chat.close();
-    }
-    else if(ticket.role == "p"){
-        cout<<"Enter Student: "; getline(cin, ticket.studentName);
-        ifstream pconvo(ticket.studentName + "_" + ticket.professor +".txt");
-        string line;
-        if(pconvo.is_open()){
-            while(getline(pconvo, line)){
-                cout<<line;
+            proflist.close();
+        }
+        cout << "\nEnter Professor number: ";
+        int profIndex;
+        cin >> profIndex;
+        cin.ignore(); // Ignore the newline character left in the input buffer
+        if (profIndex > 0 && profIndex <= professors.size()) {
+            ticket.professor = professors[profIndex - 1];
+        } else {
+            cout << "Invalid selection.\n";
+            return;
+        }
+
+        do {
+            ifstream convo(ticket.studentName + "_" + ticket.professor + ".txt");
+            if (convo.is_open()) {
+                while (getline(convo, line)) {
+                    cout << line << endl;
+                }
+                convo.close();
             }
-        }pconvo.close();
-        cout<<"Enter a message: "; getline(cin, message.msg);
-        ofstream schat(ticket.studentName + "_" + ticket.professor +".txt", ios::app);
-        if(schat.is_open()){
-            
-                schat<<ticket.professor<<endl;
-                schat<<message.msg<<endl;
-            }schat.close();
 
+            cout << "\nEnter a message: ";
+            getline(cin, exit);
+            if (exit == "q" || exit == "Q") {
+                clearscreen();
+                studentsInterface();
+                break;
+            } else {
+                message.msg = exit;
+                clearscreen();
+                ofstream chat(ticket.studentName + "_" + ticket.professor + ".txt", ios::app);
+                if (chat.is_open()) {
+                    chat << setw(30) << " " << ticket.studentName << ":" << endl;
+                    chat << setw(30) << " " << message.msg << endl;
+                    chat.close();
+                }
+            }
+        } while (exit != "q" && exit != "Q");
     }
+    // Professor to Student
+    else if (ticket.role == "p") {
+        cout << "Students: \n";
+        ifstream students("StudentsOf_" + ticket.professor + ".txt");
+        int count = 1;
+        string line;
+        vector<string> studentList;
 
+        if (students.is_open()) {
+            while (students >> user) {
+                cout << setw(3) << " " << "(" << count++ << ") " << user << endl;
+                studentList.push_back(user);
+            }
+            students.close();
+        }
+        cout << "Enter Student number: ";
+        int studentIndex;
+        cin >> studentIndex;
+        cin.ignore(); // Ignore the newline character left in the input buffer
+        if (studentIndex > 0 && studentIndex <= studentList.size()) {
+            ticket.studentName = studentList[studentIndex - 1];
+        } else {
+            cout << "Invalid selection.\n";
+            return;
+        }
 
+        do {
+            ifstream pconvo(ticket.studentName + "_" + ticket.professor + ".txt");
+            if (pconvo.is_open()) {
+                while (getline(pconvo, line)) {
+                    cout << line << endl;
+                }
+                pconvo.close();
+            }
+            cout << "\nEnter a message: ";
+            getline(cin, exit);
+            if (exit == "q" || exit == "Q") {
+                clearscreen();
+                studentsInterface();
+                break;
+            } else {
+                message.msg = exit;
+                clearscreen();
+                ofstream schat(ticket.studentName + "_" + ticket.professor + ".txt", ios::app);
+                if (schat.is_open()) {
+                    schat << ticket.professor << ":" << endl;
+                    schat << message.msg << endl;
+                    schat.close();
+                }
+            }
+        } while (exit != "q" && exit != "Q");
+    }
 }
 
  void addSchedule(string uname){
