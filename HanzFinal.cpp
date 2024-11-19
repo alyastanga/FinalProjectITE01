@@ -42,6 +42,7 @@ void analytics();
 void profSched();
 void chooseProf();
 void chooseDay();
+void viewSched();
 
 int main() {
     clearscreen();
@@ -205,6 +206,12 @@ void login() {
     cout << setw(3) << " "<<"Enter Password: "; getline(cin, pass);
 
     ifstream input("accounts.txt");
+    if (!input.is_open()) {   
+            clearscreen();
+            cout << "Error: Unable to open the accounts file. Please ensure it exists.\n";
+            return; // Exit the login function
+        }
+
     if (input.is_open()) {   
         while (input >> luname >> lpass >> ticket.department >> ticket.role >> ticket.studentId) {
             if (luname == id && lpass == pass && ticket.role == "s") {
@@ -346,7 +353,7 @@ void professorsInterface() {
         analytics();
         break;
         case 4: clearscreen();
-        //viewSchedule(ticket.professor);
+        //viewSched();
         professorsInterface();
         break;
         case 5: clearscreen();
