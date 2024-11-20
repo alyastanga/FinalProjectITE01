@@ -380,7 +380,7 @@ void viewTickets() {
         ifstream viewfile(filename);
         if (viewfile.is_open()) {
             cout << "\n--- Your Tickets ---\n";
-            cout << "----------------------------------------\n";
+            cout << "========================================\n";
             while (getline(viewfile, line)) {
                 cout << line << endl;
             }
@@ -389,7 +389,6 @@ void viewTickets() {
             cout << "Unable to open file.\n";
         }
 
-        cout << "----------------------------------------\n";
         cout << "\nPress Enter to continue...";
         cin.ignore();
         cin.get();
@@ -400,7 +399,7 @@ void viewTickets() {
         ifstream ticketFiles(filename);
         if (ticketFiles.is_open()) {
             cout << "\n--- Tickets Assigned to You ---\n";
-            cout << "----------------------------------------\n";
+            cout << "========================================\n";
             while (getline(ticketFiles, line)) {
                 cout << line << endl;
             }
@@ -408,8 +407,6 @@ void viewTickets() {
         } else {
             cout << "Error opening the tickets file.\n";
         }
-
-        cout << "----------------------------------------\n";
         cout << "\nPress Enter to continue...";
         cin.ignore();
         cin.get();
@@ -468,7 +465,7 @@ switch (concernChoice) {
     addTickets(); break;
 }
 
-cout << "Enter additional details about your concern: ";
+cout << "\nEnter additional details about your concern: ";
 getline(cin, additionalDetails);
 
 // Continue with the rest of the code...
@@ -542,7 +539,7 @@ void resolveTicket() {
     ifstream printTix(filename);
     if (printTix.is_open()) {
         cout << "\n--- Tickets Assigned to You ---\n";
-        cout << "----------------------------------------\n";
+        cout << "========================================\n";
         while (getline(printTix, linya)) {
             cout << linya << endl;
         }
@@ -550,9 +547,6 @@ void resolveTicket() {
     } else {
         cout << "Error opening the tickets file.\n";
     }
-
-    cout << "----------------------------------------\n";
-    cout << "\n\n";
 
     string ticketId;
     string studentName;
@@ -605,6 +599,7 @@ void resolveTicket() {
             } else if (rename("temp_tickets.txt", (ticket.professor + "_tickets.txt").c_str()) != 0) {
                 perror("Error renaming new file");
             } else {
+                cout << "=======================================================\n";
                 cout << "Ticket " << ticketId << " resolved successfully in professor's file!\n";
             }
         }
@@ -657,6 +652,7 @@ void resolveTicket() {
                 perror("Error renaming new file");
             } else {
                 cout << "Ticket " << ticketId << " resolved successfully in student's file!\n";
+                cout << "=======================================================\n";
             }
         }
     } else {
@@ -764,7 +760,7 @@ void analytics(){
         float A9percentage = (static_cast<float>(A9) / totalTix) * 100;
         float A10percentage = (static_cast<float>(A10) / totalTix) * 100;
         float totalTixPercentage = (static_cast<float>(totalTix) / totalTix) * 100;
-        cout << "\n--------------------------------------------------------------------------------\n";
+        cout << "\n================================================================================\n";
         cout << setw(25) << " " << "Concern Analytics\n\n";
         cout << left << setw(40) << "Concern Categories" << setw(10) << "Frequency" << setw(10) << "Percentage" << endl;
         if(A1 > 0){
@@ -799,7 +795,7 @@ void analytics(){
         }
         cout<< left << setw(44) <<"Total Tickets: "<<setw(8) << totalTix<< fixed << setprecision(2) << totalTixPercentage <<endl;
 
-        cout << "\n--------------------------------------------------------------------------------\n";
+        cout << "\n================================================================================\n";
         cout << "\nPress Enter to continue...";
         cin.ignore();
         cin.get();
@@ -840,7 +836,6 @@ bool isDayOfWeek(const string& line, const Sched& sched) {
 
 void chooseProf() {
     int profChoice;
-    cout << "Which professor? \n";
     ifstream profs("Schedule.txt");
     if (!profs) {
         cerr << "Error: File could not be opened." << endl;
@@ -859,11 +854,12 @@ void chooseProf() {
     profs.close();
 
     sort(professors.begin(), professors.end());
-    cout << "Professors:" << endl;
+    cout << "\nProfessors:" << endl;
     for (size_t i = 0; i < professors.size(); i++) {
         cout << "(" << i + 1 << ") " << professors[i] << endl;
     continue;
     }
+    cout << "\nEnter which Professor you have concern with(# only): ";
     while (true) {
         cin >> profChoice;
         
@@ -884,7 +880,7 @@ void chooseProf() {
 }
 
 void chooseDay() {
-    cout << "Choose the available time with Professor " << ticket.professor << ":(Enter # only)\n";
+    cout << "\nChoose the available time with Professor " << ticket.professor << ":(Enter # only)\n";
 
 
     ifstream profs("Schedule.txt");
@@ -931,7 +927,7 @@ void chooseDay() {
         profs.close();
         return;
     }
-
+    cout << "Which Day(# only): ";
     int dayChoice;
     while (true) {
         cin >> dayChoice;
@@ -1020,7 +1016,8 @@ void Messenger() {
             }
             proflist.close();
         }
-        cout << "\nEnter Professor number: ";
+        cout << "\n===========================================";
+        cout << "\nChoose which professor to talk to(# only): ";
         int profIndex;
         cin >> profIndex;
         cin.ignore(); // Ignore the newline character left in the input buffer
@@ -1039,7 +1036,7 @@ void Messenger() {
                 }
                 convo.close();
             }
-
+            cout << "\n==================================";
             cout << "\nEnter a message(Enter Q to Exit): ";
             getline(cin, exit);
             if (exit == "q" || exit == "Q") {
@@ -1073,7 +1070,8 @@ void Messenger() {
             }
             students.close();
         }
-        cout << "Enter Student number: ";
+                cout << "\n===========================================";
+        cout << "\nChoose which student to talk to(# only): ";
         int studentIndex;
         cin >> studentIndex;
         cin.ignore(); // Ignore the newline character left in the input buffer
@@ -1092,6 +1090,7 @@ void Messenger() {
                 }
                 pconvo.close();
             }
+            cout << "\n==================================";
             cout << "\nEnter a message(Enter Q to Exit): ";
             getline(cin, exit);
             if (exit == "q" || exit == "Q") {
@@ -1127,7 +1126,9 @@ void viewSched() {
     while (getline(profs, line)) {
         if (line == ticket.professor) {
             foundProfessor = true;
-            cout << "Your Current Schedule: " << endl;
+            cout << "======================" << endl;
+            cout << "Your Current Schedule:" << endl;
+            cout << "======================" << endl;
             // Read and display the professor's schedule
             for (int i = 0; i < 7; ++i) {
                 if (getline(profs, line) && line.find(sched.days[i]) != string::npos) {
@@ -1143,9 +1144,11 @@ void viewSched() {
     }
 
     //If the professor wants to change his schedule...
-    cout << "Do you want to change your current schedule?(Y/N) ";
     char changeSched;
+    cout << "=================================================" << endl;
+    cout << "Do you want to change your current schedule?(Y/N)";
     cin >> changeSched;
+
     switch (changeSched) {
         case 'Y':case 'y':
 
