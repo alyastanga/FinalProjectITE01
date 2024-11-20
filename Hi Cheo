@@ -13,6 +13,7 @@ struct Ticket
 {
     string studentName, studentId, concern, date, professor, status, role, department;
 };
+int rating;
 
 void registerUser();
 void login();
