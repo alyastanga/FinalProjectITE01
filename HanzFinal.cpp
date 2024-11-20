@@ -353,7 +353,7 @@ void professorsInterface() {
         analytics();
         break;
         case 4: clearscreen();
-        //viewSched();
+        viewSched();
         professorsInterface();
         break;
         case 5: clearscreen();
@@ -469,10 +469,7 @@ switch (concernChoice) {
 }
 
 cout << "Enter additional details about your concern: ";
-getline(cin, additionalDetails); 
-//cout << "Enter the professor's name: ";
-//getline(cin, professor);
-
+getline(cin, additionalDetails);
 
 // Continue with the rest of the code...
 
@@ -1113,4 +1110,54 @@ void Messenger() {
             }
         } while (exit != "q" && exit != "Q");
     }
+}
+
+void viewSched() {
+    ifstream profs("Schedule.txt");
+
+    if (!profs.is_open()) {
+        cout << "Error: Could not open Schedule.txt" << endl;
+        return;
+    }
+
+    string line;
+    Sched sched;
+    bool foundProfessor = false;
+
+    while (getline(profs, line)) {
+        if (line == ticket.professor) {
+            foundProfessor = true;
+            cout << "Your Current Schedule: " << endl;
+            // Read and display the professor's schedule
+            for (int i = 0; i < 7; ++i) {
+                if (getline(profs, line) && line.find(sched.days[i]) != string::npos) {
+                    cout << line << endl;
+                }
+            }
+            break;
+        }
+    }
+
+    if (!foundProfessor) {
+        cout << "You have no schedule yet." << endl;
+    }
+
+    //If the professor wants to change his schedule...
+    cout << "Do you want to change your current schedule?(Y/N) ";
+    char changeSched;
+    cin >> changeSched;
+    switch (changeSched) {
+        case 'Y':case 'y':
+        
+        break;
+        default:
+        break;
+    }
+
+
+    profs.close();
+    cout<< "Press Enter to continue...";
+    cin.ignore();
+    cin.get();
+    clearscreen();
 }
