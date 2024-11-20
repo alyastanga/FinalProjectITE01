@@ -1148,7 +1148,7 @@ void viewSched() {
     cin >> changeSched;
     switch (changeSched) {
         case 'Y':case 'y':
-        
+
         break;
         default:
         break;
@@ -1160,4 +1160,5 @@ void viewSched() {
     cin.ignore();
     cin.get();
     clearscreen();
+    professorsInterface();
 }
