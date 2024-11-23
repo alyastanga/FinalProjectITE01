@@ -1197,7 +1197,7 @@ void chooseDay()
 void enroll()
 {
     cout << "\n"
-         << setw(3) << " " << "List of the Professors:\n\n";
+         << "List of the Professors:\n\n";
     ifstream list("accounts.txt");
     string line, user, pass, dep, role, id;
     int count = 0, i = 0;
@@ -1210,7 +1210,7 @@ void enroll()
             if (role == "p")
             {
                 i = 1 + count++;
-                cout << "(" << i << ") " << user << endl;
+                cout << setw(3) << " " << "(" << i << ") " << user << endl;
                 professors.push_back(user);
             }
         }
@@ -1239,7 +1239,7 @@ void enroll()
         students.close();
     }
 
-    cout << "Successfully Enrolled to professor, " << ticket.professor << "\n\n";
+    cout << "Successfully Enrolled to professor " << ticket.professor << "\n\n";
     cout << "Press Enter to continue...\n";
     cin.get();
     clearscreen();
