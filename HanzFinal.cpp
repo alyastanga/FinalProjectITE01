@@ -1171,9 +1171,9 @@ void chooseDay()
         return;
     }
     int dayChoice;
-    cout << "Which Day(# only): ";
     while (true)
     {
+        cout << "Which Day(# only): ";
         cin >> dayChoice;
 
         if (cin.fail())
@@ -1181,7 +1181,6 @@ void chooseDay()
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             cout << "Please enter a valid number." << endl;
-            cout << "Which Day(# only): ";
             continue;
         }
 
@@ -1193,7 +1192,6 @@ void chooseDay()
         else
         {
             cout << "Please enter a number between 1 and " << availableDays.size() << endl;
-            cout << "Which Day(# only): ";
         }
     }
 
