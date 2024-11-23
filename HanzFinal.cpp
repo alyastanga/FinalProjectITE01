@@ -1043,13 +1043,16 @@ void analytics() {
         "General Inquiries"
     };
 
-    // Print all concern categories with fixed formatting
+    // Print only the concern categories that have non-zero counts
     int counts[] = {A1, A2, A3, A4, A5, A6, A7, A8, A9, A10};
     for (int i = 0; i < 10; i++) {
-        cout << left << setw(50) << (categories[i] + ": ") 
-             << setw(12) << counts[i] 
-             << fixed << setprecision(1) << setw(2) << percentages[i] << "%\n";
+        if (counts[i] > 0) {
+            cout << left << setw(50) << (categories[i] + ": ") 
+                 << setw(12) << counts[i] 
+                 << fixed << setprecision(1) << setw(2) << percentages[i] << "%\n";
+        }
     }
+    cout << "================================================================================\n";
 
     // Calculate and display average resolution time
     if (!durations.empty()) {
