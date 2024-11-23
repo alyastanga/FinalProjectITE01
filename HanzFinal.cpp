@@ -1197,7 +1197,7 @@ void chooseDay()
 void enroll()
 {
     cout << "\n"
-         << "List of the Professors:\n\n";
+         << "List of the Professors:\n";
     ifstream list("accounts.txt");
     string line, user, pass, dep, role, id;
     int count = 0, i = 0;
