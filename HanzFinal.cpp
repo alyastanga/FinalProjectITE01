@@ -89,7 +89,7 @@ int main()
         break;
     case 3:
         clearscreen();
-        retrievePassword();
+        retrievePassword(); 
         break;
     case 4:
         clearscreen();
@@ -291,16 +291,17 @@ void login()
 void retrievePassword()
 {
     int count = 0;
-    string fuse, user, pass, role, sid;
+    string enteredUsername, user, pass = "", sid, role;
     cout << "Enter username: ";
-    cin >> fuse;
+    cin >> enteredUsername;
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
     ifstream ret("accounts.txt");
     if (ret.is_open())
     {
-        while (ret >> user >> pass >> role >> sid)
+        while (ret >> user >> pass >> sid >> role)
         {
-            if (user == fuse)
+            if (user == enteredUsername)
             {
                 count = 1;
                 break;
@@ -680,8 +681,10 @@ void resolveTicket()
     string studentName;
     cout << "Enter the ticket ID you want to resolve: ";
     cin >> ticketId;
+    cin.ignore(); // Clear the newline character from the input buffer
     cout << "Enter the student name: ";
     cin >> studentName;
+    cin.ignore(); // Clear the newline character from the input buffer
 
     // Professor's file update
     ifstream inputFile(ticket.professor + "_tickets.txt");
@@ -823,12 +826,12 @@ void resolveTicket()
         cout << "Error opening student's file.\n";
     }
 
+    clearscreen();
     // Add a pause before clearing screen
     cout << "\nPress Enter to continue...";
     cin.ignore();
     cin.get();
 
-    clearscreen();
     professorsInterface();
 }
 
@@ -1129,7 +1132,8 @@ void chooseDay()
         {"Thursday:", 4},
         {"Friday:", 5},
         {"Saturday:", 6},
-        {"Sunday:", 7}};
+        {"Sunday:", 7}
+        };
 
     string line;
     bool foundProfSection = false;
@@ -1166,8 +1170,8 @@ void chooseDay()
         profs.close();
         return;
     }
-    cout << "Which Day(# only): ";
     int dayChoice;
+    cout << "Which Day(# only): ";
     while (true)
     {
         cin >> dayChoice;
@@ -1177,6 +1181,7 @@ void chooseDay()
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             cout << "Please enter a valid number." << endl;
+            cout << "Which Day(# only): ";
             continue;
         }
 
@@ -1188,6 +1193,7 @@ void chooseDay()
         else
         {
             cout << "Please enter a number between 1 and " << availableDays.size() << endl;
+            cout << "Which Day(# only): ";
         }
     }
 
