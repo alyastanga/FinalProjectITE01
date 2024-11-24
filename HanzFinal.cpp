@@ -4,7 +4,6 @@
 #include <cmath>
 #include <cstdlib>
 #include <ctime>
-#include <time.h>
 #include <limits>
 #include <iomanip>
 #include <vector>
@@ -18,16 +17,7 @@ struct Ticket
 };
 struct Sched
 {
-    string days[7];
-    Sched() { // Corrected constructor name
-        days[0] = "Monday: ";
-        days[1] = "Tuesday: ";
-        days[2] = "Wednesday: ";
-        days[3] = "Thursday: ";
-        days[4] = "Friday: ";
-        days[5] = "Saturday: ";
-        days[6] = "Sunday: ";
-    }
+    string days[7] = {"Monday: ", "Tuesday: ", "Wednesday: ", "Thursday: ", "Friday: ", "Saturday: ", "Sunday: "};
     string time[7];
 };
 
@@ -56,6 +46,8 @@ void profSched();
 void chooseProf();
 void chooseDay();
 void viewSched();
+bool isDayOfWeek(const std::string &line, const Sched &sched);
+
 
 int main()
 {
@@ -968,6 +960,7 @@ void notifTickets()
 void analytics() {
     int A1 = 0, A2 = 0, A3 = 0, A4 = 0, A5 = 0, A6 = 0, A7 = 0, A8 = 0, A9 = 0, A10 = 0;
     vector<int> durations; // To track resolution times
+    float totPercent;
     string professorFile = ticket.professor + "_tickets.txt";
     ifstream analytics(professorFile);
     string line, createdDate, resolvedDate;
@@ -1010,15 +1003,8 @@ void analytics() {
                 if (resolvedDate != "Pending") {
                     hasResolvedTickets = true;
                     struct tm tmCreated = {}, tmResolved = {};
-                    #ifdef _WIN32
-                        strftime(createdDate.data(), createdDate.size(),"%Y-%m-%d %H:%M:%S", &tmCreated);
-                        strftime(resolvedDate.data(), resolvedDate.size(),"%Y-%m-%d %H:%M:%S", &tmResolved);
-                    
-                    #else
-                        strptime(createdDate.c_str(), "%Y-%m-%d %H:%M:%S", &tmCreated);
-                        strptime(resolvedDate.c_str(), "%Y-%m-%d %H:%M:%S", &tmResolved);
-                    #endif
-                    
+                    strptime(createdDate.c_str(), "%Y-%m-%d %H:%M:%S", &tmCreated);
+                    strptime(resolvedDate.c_str(), "%Y-%m-%d %H:%M:%S", &tmResolved);
                     time_t tCreated = mktime(&tmCreated);
                     time_t tResolved = mktime(&tmResolved);
                     durations.push_back(difftime(tResolved, tCreated) / 60);
@@ -1063,10 +1049,18 @@ void analytics() {
     // Print all concern categories with fixed formatting
     int counts[] = {A1, A2, A3, A4, A5, A6, A7, A8, A9, A10};
     for (int i = 0; i < 10; i++) {
+        if (counts[i] > 0) {
         cout << left << setw(50) << (categories[i] + ": ") 
              << setw(12) << counts[i] 
              << fixed << setprecision(1) << setw(2) << percentages[i] << "%\n";
+        }
     }
+    for (int i = 0; i < 10; i++) {
+        if (percentages[i] > 0) {
+            totPercent += percentages[i];
+        }
+    }
+    cout << left <<  setw(50) << "Total Tickets Created: " << setw(12) << totalTickets << fixed << setprecision(1) << setw(2) << totPercent << "%" << endl;
 
     // Calculate and display average resolution time
     if (!durations.empty()) {
@@ -1082,8 +1076,6 @@ void analytics() {
     } else {
         cout << "\nNo resolved tickets yet.\n";
     }
-
-    cout << "\nTotal Tickets Created: " << totalTickets << endl;
     cout << "================================================================================\n";
     cout << "\nPress Enter to continue...";
     cin.ignore();
@@ -1092,8 +1084,7 @@ void analytics() {
     professorsInterface();
 }
 
-void profSched()
-{
+void profSched() {
     cout << "Enter your Schedule (hh:mm[in] - hh:mm[out]):\n";
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
     for (int i = 0; i < 7; ++i)
@@ -1188,74 +1179,87 @@ void chooseProf()
     }
 }
 
-
-
-void chooseDay() {
-    cout << "Choose the available time with Professor " << ticket.professor << ":(Enter # only)\n";
-
+void chooseDay()
+{
+    cout << "\nChoose the available time with Professor " << ticket.professor << "(Enter # only): \n";
 
     ifstream profs("Schedule.txt");
-    if (!profs) {
+    if (!profs)
+    {
         cerr << "Error: File could not be opened." << endl;
         return;
     }
 
-    vector<pair<string, int> > days;
-    days.push_back(make_pair("Monday:", 1));
-    days.push_back(make_pair("Tuesday:", 2));
-    days.push_back(make_pair("Wednesday:", 3));
-    days.push_back(make_pair("Thursday:", 4));
-    days.push_back(make_pair("Friday:", 5));
-    days.push_back(make_pair("Saturday:", 6));
-    days.push_back(make_pair("Sunday:", 7));
+    const vector<pair<string, int>> days = {
+        {"Monday:", 1},
+        {"Tuesday:", 2},
+        {"Wednesday:", 3},
+        {"Thursday:", 4},
+        {"Friday:", 5},
+        {"Saturday:", 6},
+        {"Sunday:", 7}};
 
     string line;
     bool foundProfSection = false;
     vector<string> availableDays;
 
-    while (getline(profs, line)) {
-        if (line == ticket.professor) {
+    while (getline(profs, line))
+    {
+        if (line == ticket.professor)
+        {
             foundProfSection = true;
             continue;
         }
 
-        if (foundProfSection) {
-            for (size_t i = 0; i < days.size(); ++i) {
-                if (line.find(days[i].first) == 0) {
-                    availableDays.push_back(days[i].first);
-                    cout << days[i].second << ". " << days[i].first << endl;
+        if (foundProfSection)
+        {
+            for (const auto &[day, number] : days)
+            {
+                if (line.find(day) == 0)
+                {
+                    cout << "(" << number << ") " << line << endl;
+                    availableDays.push_back(line);
+                    break;
                 }
             }
-            if (line.empty()) {
-                break; // End of professor's schedule section
-            }
+
+            if (line.empty())
+                break;
         }
     }
 
-    if (!foundProfSection) {
+    if (!foundProfSection)
+    {
         cerr << "Error: Professor's schedule not found in the file." << endl;
         profs.close();
         return;
     }
-
-    if (availableDays.empty()) {
-        cout << "No available days found for Professor " << ticket.professor << "." << endl;
-        return;
-    }
-
     cout << "Which Day(# only): ";
     int dayChoice;
-    while (true) {
+    while (true)
+    {
         cin >> dayChoice;
-        cin.ignore(); // Ignore the newline character left in the input buffer
 
-        if (dayChoice > 0 && dayChoice <= availableDays.size()) {
-            cout << "You have chosen " << availableDays[dayChoice - 1] << " with Professor " << ticket.professor << "." << endl;
+        if (cin.fail())
+        {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "Please enter a valid number." << endl;
+            continue;
+        }
+
+        if (dayChoice >= 1 && dayChoice <= availableDays.size())
+        {
+            ticket.scheduledMeeting = availableDays[dayChoice - 1];
             break;
-        } else {
-            cout << "Invalid selection. Please enter a number between 1 and " << availableDays.size() << ": ";
+        }
+        else
+        {
+            cout << "Please enter a number between 1 and " << availableDays.size() << endl;
         }
     }
+
+    profs.close();
 }
 
 void enroll()
