@@ -1050,8 +1050,8 @@ void analytics() {
     int counts[] = {A1, A2, A3, A4, A5, A6, A7, A8, A9, A10};
     for (int i = 0; i < 10; i++) {
         if (counts[i] > 0) {
-        cout << left << setw(50) << (categories[i] + ": ") 
-             << setw(12) << counts[i] 
+        cout << left << setw(54) << (categories[i] + ": ") 
+             << setw(10) << counts[i] 
              << fixed << setprecision(1) << setw(2) << percentages[i] << "%\n";
         }
     }
@@ -1060,7 +1060,7 @@ void analytics() {
             totPercent += percentages[i];
         }
     }
-    cout << left <<  setw(50) << "Total Tickets Created: " << setw(12) << totalTickets << fixed << setprecision(1) << setw(2) << totPercent << "%" << endl;
+    cout << left <<  setw(54) << "Total Tickets Created: " << setw(10) << totalTickets << fixed << setprecision(1) << setw(2) << totPercent << "%" << endl;
 
     // Calculate and display average resolution time
     if (!durations.empty()) {
