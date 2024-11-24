@@ -961,7 +961,7 @@ void rateResolvedTicket() {
         ifstream professorFile(ticket.professor + "_tickets.txt");  // Open professor's ticket file
         ofstream professorTempFile("temp_professor_tickets.txt");  // Temp file for professor's tickets
         bool professorTicketFound = false;
-        
+
         if (professorFile.is_open() && professorTempFile.is_open()) {
             string line;
             while (getline(professorFile, line)) {
@@ -1129,6 +1129,7 @@ void notifTickets()
 void analytics() {
     int A1 = 0, A2 = 0, A3 = 0, A4 = 0, A5 = 0, A6 = 0, A7 = 0, A8 = 0, A9 = 0, A10 = 0;
     vector<int> durations; // To track resolution times
+    vector<int>ratings;
     float totPercent;
     string professorFile = ticket.professor + "_tickets.txt";
     ifstream analytics(professorFile);
@@ -1136,6 +1137,8 @@ void analytics() {
 
     bool hasResolvedTickets = false;
     int totalTickets = 0;
+    int totalRating = 0;
+    int ratingCount = 0;
 
     if (analytics.is_open()) {
         while (getline(analytics, line)) {
@@ -1179,7 +1182,15 @@ void analytics() {
                     durations.push_back(difftime(tResolved, tCreated) / 60);
                 }
             }
+        if (line.find("Student Rating:") != string::npos) {
+                size_t pos = line.find(":") + 2; // Skip past "Student Rating: "
+                int rating = stoi(line.substr(pos, 1)); // Extract the rating number (e.g., "4" from "4/5")
+                ratings.push_back(rating);
+                totalRating += rating;
+                ratingCount++;
+            }
         }
+
         analytics.close();
     }
 
@@ -1250,6 +1261,15 @@ void analytics() {
     } else {
         cout << "\nNo resolved tickets yet.\n";
     }
+    if (ratingCount > 0) {
+        float avgRating = static_cast<float>(totalRating) / ratingCount;
+        cout << "\nAverage Professor Rating: " << fixed << setprecision(2) << avgRating << "/5\n";
+    } else {
+        cout << "\nNo ratings yet.\n";
+    }
+
+    cout << "\nTotal Tickets Created: " << totalTickets << endl;
+
     cout << "================================================================================\n";
     cout << "\nPress Enter to continue...";
     cin.ignore();
