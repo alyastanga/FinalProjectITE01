@@ -306,14 +306,14 @@ void login()
 void retrievePassword()
 {
     int count = 0;
-    string fuse, user, pass, role, sid;
+    string fuse, user, pass, role, sid, dep;
     cout << "Enter username: ";
     cin >> fuse;
 
     ifstream ret("accounts.txt");
     if (ret.is_open())
     {
-        while (ret >> user >> pass >> role >> sid)
+        while (ret >> user >> pass >> dep >> role >> sid)
         {
             if (user == fuse)
             {
@@ -345,7 +345,7 @@ void studentsInterface()
         notifTickets();
         cout << "\n";
         cout << "Option: \n\n";
-        cout << " (1) Create Ticket\n (2) View Tickets\n (3) Enroll\n (4) Message \n (5) Rate Resolved Ticket\n (6) Logout\n (7) Logout and Exit\n";
+        cout << " (1) Create Ticket\n (2) View Tickets\n (3) Enroll\n (4) Message \n (5) Rate Resolved Ticket\n (6) Logout\n (7) Exit\n";
         cout << "\nOption(#): ";
         cin >> action;
 
@@ -414,7 +414,7 @@ void professorsInterface()
         notifTickets();
         cout << "\n";
         cout << "Option: \n\n";
-        cout << " (1) View Ticket\n (2) Resolve Tickets\n (3) View Analytics \n (4) View Schedule \n (5) Message \n (6) Logout\n (7) Logout and Exit\n";
+        cout << " (1) View Ticket\n (2) Resolve Tickets\n (3) View Analytics \n (4) View Schedule \n (5) Message \n (6) Logout\n (7) Exit\n";
         cout << "\nOption(#): ";
         cin >> action;
         cout << "\n";
@@ -680,10 +680,10 @@ void addTickets()
     {
         cout << "Unable to open file.\n";
     }
-    cout << "Press 'q' if you want to create another ticket(Press any key if not): ";
+    cout << "Press 'y' if you want to create another ticket(Press any key if not): ";
     char choice;
     cin >> choice;
-    if (choice == 'q' || choice == 'Q')
+    if (choice == 'Y' || choice == 'y')
     {
         clearscreen();
         addTickets(); 
@@ -841,10 +841,10 @@ void resolveTicket()
         cout << "Error opening student's file.\n";
     }
 
-    cout << "Press 'q' if you want to resolve another ticket(Press any key if not): ";
+    cout << "Press 'Y' if you want to resolve another ticket(Press any key if not): ";
     char choice;
     cin >> choice;
-    if (choice == 'q' || choice == 'Q')
+    if (choice == 'y' || choice == 'Y')
     {
         clearscreen();
         resolveTicket(); 
@@ -961,7 +961,7 @@ void rateResolvedTicket() {
         ifstream professorFile(ticket.professor + "_tickets.txt");  // Open professor's ticket file
         ofstream professorTempFile("temp_professor_tickets.txt");  // Temp file for professor's tickets
         bool professorTicketFound = false;
-
+        
         if (professorFile.is_open() && professorTempFile.is_open()) {
             string line;
             while (getline(professorFile, line)) {
@@ -1129,7 +1129,6 @@ void notifTickets()
 void analytics() {
     int A1 = 0, A2 = 0, A3 = 0, A4 = 0, A5 = 0, A6 = 0, A7 = 0, A8 = 0, A9 = 0, A10 = 0;
     vector<int> durations; // To track resolution times
-    vector<int>ratings;
     float totPercent;
     string professorFile = ticket.professor + "_tickets.txt";
     ifstream analytics(professorFile);
@@ -1137,8 +1136,6 @@ void analytics() {
 
     bool hasResolvedTickets = false;
     int totalTickets = 0;
-    int totalRating = 0;
-    int ratingCount = 0;
 
     if (analytics.is_open()) {
         while (getline(analytics, line)) {
@@ -1182,15 +1179,7 @@ void analytics() {
                     durations.push_back(difftime(tResolved, tCreated) / 60);
                 }
             }
-        if (line.find("Student Rating:") != string::npos) {
-                size_t pos = line.find(":") + 2; // Skip past "Student Rating: "
-                int rating = stoi(line.substr(pos, 1)); // Extract the rating number (e.g., "4" from "4/5")
-                ratings.push_back(rating);
-                totalRating += rating;
-                ratingCount++;
-            }
         }
-
         analytics.close();
     }
 
@@ -1239,12 +1228,10 @@ void analytics() {
         if (percentages[i] > 0) {
             totPercent += percentages[i];
         }
-    
+    }
+
     cout << left <<  setw(54) << "Total Tickets Created: " << setw(10) << totalTickets << fixed << setprecision(1) << setw(2) << totPercent << "%" << endl;
-            cout << left << setw(50) << (categories[i] + ": ") 
-                 << setw(12) << counts[i] 
-                 << fixed << setprecision(1) << setw(2) << percentages[i] << "%\n";
-    } 
+   
     
     cout << "================================================================================\n";
 
@@ -1263,14 +1250,6 @@ void analytics() {
     } else {
         cout << "\nNo resolved tickets yet.\n";
     }
-        if (ratingCount > 0) {
-        float avgRating = static_cast<float>(totalRating) / ratingCount;
-        cout << "\nAverage Professor Rating: " << fixed << setprecision(2) << avgRating << "/5\n";
-    } else {
-        cout << "\nNo ratings yet.\n";
-    }
-        cout << "\nTotal Tickets Created: " << totalTickets << endl;
-
     cout << "================================================================================\n";
     cout << "\nPress Enter to continue...";
     cin.ignore();
@@ -1291,7 +1270,7 @@ void profSched() {
     ofstream pSched("Schedule.txt", ios::app);
     if (pSched.is_open())
     {
-        pSched << ticket.professor << endl;
+        pSched <<"Schedule of professor, " <<ticket.professor << endl;
         for (int i = 0; i < 7; ++i)
         {
             pSched << sched.days[i] << sched.time[i] << endl;
