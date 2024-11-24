@@ -41,6 +41,7 @@ void resolveTicket();
 void viewTickets();
 void studentsInterface();
 void professorsInterface();
+void rateResolvedTicket();
 void notifTickets();
 void Messenger();
 void enroll();
