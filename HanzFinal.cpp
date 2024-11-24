@@ -16,6 +16,7 @@ struct Ticket
 {
     string studentName, studentId, concern, date, professor, status, role, department, scheduledMeeting;
 };
+int rating;
 struct Sched
 {
     string days[7];
@@ -341,7 +342,7 @@ void studentsInterface()
         notifTickets();
         cout << "\n";
         cout << "Option: \n\n";
-        cout << " (1) Create Ticket\n (2) View Tickets\n (3) Enroll\n (4) Message \n (5) Logout\n (6) Logout and Exit\n";
+        cout << " (1) Create Ticket\n (2) View Tickets\n (3) Enroll\n (4) Message \n (5) Rate Resolved Ticket\n (6) Logout\n (7) Logout and Exit\n";
         cout << "\nOption(#): ";
         cin >> action;
 
@@ -377,12 +378,16 @@ void studentsInterface()
         Messenger();
         studentsInterface();
         break;
-    case 5:
+    case 5: 
+        clearscreen();
+        rateResolvedTicket();
+        break;
+    case 6:
         cout << "Logging out...\n";
         clearscreen();
         main();
         break;
-    case 6:
+    case 7:
         clearscreen();
         cout << "Thank you for using our system!\n";
         exit(0);
@@ -845,7 +850,160 @@ void resolveTicket()
         professorsInterface();
     }
 }
+void rateResolvedTicket() {
+    string ticketId;
+    string studentName;
 
+    cout << "Enter your ticket ID: ";
+    cin >> ticketId;
+    cin.ignore();  // Clear the newline character left in the input buffer
+
+    cout << "Enter your name: ";
+    getline(cin, studentName);  // Use getline to allow spaces in the name
+
+    ifstream studentFile(studentName + "_tickets.txt");
+    ofstream tempFile("temp_student_tickets.txt");  // Temporary file for modified data
+    bool ticketFound = false;
+    int studentRating = 0;  // Variable to store the rating
+    string ratingDescription;  // Variable to store the rating description
+
+    if (studentFile.is_open() && tempFile.is_open()) {
+        string line;
+        while (getline(studentFile, line)) {
+            if (line.find("Ticket ID: " + ticketId) != string::npos) {  // If the ticket ID matches
+                ticketFound = true;
+                tempFile << line << endl;  // Write the ticket ID line
+                getline(studentFile, line);  // Read the next line (Concern)
+                tempFile << line << endl;  // Write the Concern line
+                getline(studentFile, line);  // Read the next line (Date)
+                tempFile << line << endl;  // Write the Date line
+                getline(studentFile, line);  // Read the next line (Professor)
+                tempFile << line << endl;
+                getline(studentFile, line);  // Read the next line (Professor)
+                tempFile << line << endl;  // Write the Professor line
+                getline(studentFile, line);  // Read the next line (Status)
+                tempFile << line << endl;
+                getline(studentFile, line);
+                // Check if the ticket is resolved before allowing the student to rate
+                if (line.find("resolved") != string::npos) {
+                    // Display the rating scale and explanations
+                    cout << "Please rate the resolution of this ticket (1 = Poor, 5 = Excellent):\n";
+                    cout << "1 = Poor\n";
+                    cout << "2 = Fair\n";
+                    cout << "3 = Good\n";
+                    cout << "4 = Very Good\n";
+                    cout << "5 = Excellent\n";
+                    cout << "Enter your rating (1-5): ";
+                    cin >> studentRating;
+
+                    // Validate rating input
+                    while (studentRating < 1 || studentRating > 5) {
+                        cout << "Invalid input. Please enter a rating between 1 and 5: ";
+                        cin >> studentRating;
+                    }
+
+                    // Set the corresponding rating description
+                    switch (studentRating) {
+                        case 1:
+                            ratingDescription = "Poor";
+                            break;
+                        case 2:
+                            ratingDescription = "Fair";
+                            break;
+                        case 3:
+                            ratingDescription = "Good";
+                            break;
+                        case 4:
+                            ratingDescription = "Very Good";
+                            break;
+                        case 5:
+                            ratingDescription = "Excellent";
+                            break;
+                        default:
+                            ratingDescription = "Unknown";
+                            break;
+                    }
+
+                    // Add the rating and description to the student ticket file
+                    tempFile << "Student Rating: " << studentRating << "/5 (" << ratingDescription << ")" << endl;  // Add rating and description
+                    cout << "Thank you for your feedback! Your rating of " << studentRating << "/5 (" << ratingDescription << ") has been recorded.\n";
+                } else {
+                    cout << "This ticket has not been resolved yet. You can rate it once it is resolved.\n";
+                    tempFile << line << endl;  // If not resolved, don't rate
+                }
+            } else {
+                tempFile << line << endl;  // Write the rest of the lines to the temp file
+            }
+        }
+
+        studentFile.close();
+        tempFile.close();
+
+        if (remove((studentName + "_tickets.txt").c_str()) != 0) {
+            perror("Error deleting old file");
+        } else if (rename("temp_student_tickets.txt", (studentName + "_tickets.txt").c_str()) != 0) {
+            perror("Error renaming new file");
+        } else {
+            if (!ticketFound) {
+                cout << "Ticket ID " << ticketId << " not found.\n";
+            }
+        }
+    } else {
+        cout << "Error opening student ticket file.\n";
+    }
+
+    // Now, update the professor's file with the student's rating if the ticket is resolved
+    if (ticketFound) {
+        cout << "Updating professor's file...\n";  // Debugging message
+        ifstream professorFile(ticket.professor + "_tickets.txt");  // Open professor's ticket file
+        ofstream professorTempFile("temp_professor_tickets.txt");  // Temp file for professor's tickets
+        bool professorTicketFound = false;
+
+        if (professorFile.is_open() && professorTempFile.is_open()) {
+            string line;
+            while (getline(professorFile, line)) {
+                cout << "Reading line: " << line << endl;  // Debugging message
+                if (line.find("Ticket ID: " + ticketId) != string::npos) {  // If the ticket ID matches
+                    professorTicketFound = true;
+                    cout << "Ticket ID matched, adding rating...\n";  // Debugging message
+                    professorTempFile << line << endl;  // Write the ticket ID line
+
+                    // Copy the other lines related to the ticket, up to the Status line
+                    for (int i = 0; i < 7; ++i) {
+                        getline(professorFile, line);
+                        professorTempFile << line << endl;
+                    }
+
+                    // After all ticket details, add the rating
+                    professorTempFile << "Student Rating: " << studentRating << "/5 (" << ratingDescription << ")" << endl;
+                    cout << "Rating added to professor's file.\n";  // Debugging message
+                } else {
+                    professorTempFile << line << endl;  // Write the rest of the lines to the temp file
+                }
+            }
+            professorFile.close();
+            professorTempFile.close();
+
+            // Replace the original professor ticket file with the updated file
+            if (remove((ticket.professor + "_tickets.txt").c_str()) != 0) {
+                perror("Error deleting professor's old file");
+            } else if (rename("temp_professor_tickets.txt", (ticket.professor + "_tickets.txt").c_str()) != 0) {
+                perror("Error renaming new professor file");
+            } else {
+                cout << "Professor's file successfully updated.\n";  // Debugging message
+            }
+        } else {
+            cout << "Error opening professor's ticket file.\n";
+        }
+    }
+
+    // Ask user to press Enter to continue
+    cout << "\nPress Enter to continue...\n";
+    cin.ignore();  // Discard the leftover newline from previous input
+    cin.get();     // Wait for the Enter key to be pressed
+    clearscreen();
+    studentsInterface();
+}
 void notifTickets()
 {
     string username = user.getUsername();
