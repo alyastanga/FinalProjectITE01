@@ -1171,8 +1171,8 @@ void rateResolvedTicket()
 }
 void notifTickets()
 {
-    string username = user.getUsername();
-    string role = user.getRole();
+    string username = user.getUsername(); // Current user's name
+    string role = user.getRole();         // Current user's role
     string line;
     int newTicketCount = 0, oldTicketCount = 0, newMessageCount = 0;
 
@@ -1182,26 +1182,21 @@ void notifTickets()
         ifstream stunotif(studentFile);
 
         bool isResolved = false; // Flag to track if the current ticket is resolved
-        bool isNew = false;      // Flag to track if the resolved ticket is "new"
 
         if (stunotif.is_open())
         {
             while (getline(stunotif, line)) // Iterate through each line in the student's ticket file
             {
-
                 // Check for resolved tickets
                 if (line.find("Status: resolved") != string::npos)
                 {
                     isResolved = true;
                 }
-
                 else if (isResolved && line.find("Read Status: new") != string::npos)
                 {
-                    isNew = true;
                     newTicketCount++;
                     isResolved = false;
                 }
-
                 else if (isResolved && line.find("Read Status: old") != string::npos)
                 {
                     oldTicketCount++;
@@ -1210,52 +1205,50 @@ void notifTickets()
             }
             stunotif.close();
         }
-        else
-        {
-            cout << "Error opening file: " << studentFile << endl;
-        }
 
         // Check for new messages from the professor
         string chatFile = ticket.studentName + "_" + ticket.professor + ".txt";
         ifstream chatNotif(chatFile);
+
         if (chatNotif.is_open())
         {
+            bool isMessageBlock = false;
+            string recipient;
+
             while (getline(chatNotif, line))
             {
-                if (line.find(ticket.professor + ":") != string::npos) // Assuming professor sends messages
+                // Detect the start of a message block
+                if (line.find("From:") != string::npos)
                 {
-                    newMessageCount++;
+                    isMessageBlock = true; // Start processing the message block
+                }
+                else if (isMessageBlock && line.find("To:") != string::npos)
+                {
+                    recipient = line.substr(4); // Extract the recipient's name
+
+                    // Check if the message is addressed to the current user
+                    if (recipient == username)
+                    {
+                        newMessageCount++;
+                        isMessageBlock = false; // End processing this message block
+                    }
+                }
+                else if (line.find("----------------------------------") != string::npos)
+                {
+                    isMessageBlock = false; // End of the message block
                 }
             }
             chatNotif.close();
         }
 
-        // Output the results
+        // Display results (only if there are new tickets or messages)
         if (newTicketCount > 0)
         {
             cout << "\nYou have " << newTicketCount << " resolved ticket(s) marked as new!" << endl;
         }
-        else
-        {
-            cout << "\nNo new resolved tickets at the moment." << endl;
-        }
-
-        if (oldTicketCount > 0)
-        {
-            cout << "\nYou have " << oldTicketCount << " resolved ticket(s) marked as old." << endl;
-        }
-        else
-        {
-            cout << "\nNo old resolved tickets at the moment." << endl;
-        }
-
         if (newMessageCount > 0)
         {
             cout << "You have " << newMessageCount << " new message(s) from your professor." << endl;
-        }
-        else
-        {
-            cout << "No new messages at the moment." << endl;
         }
     }
     else if (role == "p") // For Professor
@@ -1264,27 +1257,21 @@ void notifTickets()
         ifstream pronotif(professorFile);
 
         bool isResolved = false; // Flag to track if the current ticket is resolved
-        bool isNew = false;      // Flag to track if the resolved ticket is "new"
 
         if (pronotif.is_open())
         {
             while (getline(pronotif, line)) // Iterate through each line in the professor's ticket file
             {
-
                 // Check for resolved tickets
                 if (line.find("Status: resolved") != string::npos)
                 {
-
                     isResolved = true;
                 }
-
                 else if (isResolved && line.find("Read Status: new") != string::npos)
                 {
-                    isNew = true;
                     newTicketCount++;
                     isResolved = false;
                 }
-
                 else if (isResolved && line.find("Read Status: old") != string::npos)
                 {
                     oldTicketCount++;
@@ -1293,57 +1280,56 @@ void notifTickets()
             }
             pronotif.close();
         }
-        else
-        {
-            cout << "Error opening file: " << professorFile << endl;
-        }
 
         // Check for new messages from students
         ifstream studentList("StudentsOf_" + ticket.professor + ".txt");
         string studentName;
+
         while (getline(studentList, studentName))
         {
             string chatFile = studentName + "_" + ticket.professor + ".txt";
             ifstream chatNotif(chatFile);
+
             if (chatNotif.is_open())
             {
+                bool isMessageBlock = false;
+                string recipient;
+
                 while (getline(chatNotif, line))
                 {
-                    if (line.find(studentName + ":") != string::npos) // Assuming student sends messages
+                    // Detect the start of a message block
+                    if (line.find("From:") != string::npos)
                     {
-                        newMessageCount++;
+                        isMessageBlock = true; // Start processing the message block
+                    }
+                    else if (isMessageBlock && line.find("To:") != string::npos)
+                    {
+                        recipient = line.substr(4); // Extract the recipient's name
+
+                        // Check if the message is addressed to the current professor
+                        if (recipient == username)
+                        {
+                            newMessageCount++;
+                            isMessageBlock = false; // End processing this message block
+                        }
+                    }
+                    else if (line.find("----------------------------------") != string::npos)
+                    {
+                        isMessageBlock = false; // End of the message block
                     }
                 }
                 chatNotif.close();
             }
         }
 
-        // Output the results
+        // Display results (only if there are new tickets or messages)
         if (newTicketCount > 0)
         {
             cout << "\nYou have " << newTicketCount << " resolved ticket(s) marked as new!" << endl;
         }
-        else
-        {
-            cout << "\nNo new resolved tickets at the moment." << endl;
-        }
-
-        if (oldTicketCount > 0)
-        {
-            cout << "\nYou have " << oldTicketCount << " resolved ticket(s) marked as old." << endl;
-        }
-        else
-        {
-            cout << "\nNo old resolved tickets at the moment." << endl;
-        }
-
         if (newMessageCount > 0)
         {
             cout << "You have " << newMessageCount << " new message(s) from students." << endl;
-        }
-        else
-        {
-            cout << "No new messages at the moment." << endl;
         }
     }
     else
