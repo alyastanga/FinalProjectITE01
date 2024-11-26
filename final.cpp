@@ -16,17 +16,17 @@ using namespace std;
 class User
 {
 private:
-    string username, password, role, sid, department;
+    string username, password, role, sid, college;
 
 public:
-    User() : username(""), password(""), role(""), sid(""), department("") {}
-    User(string uname, string pass, string r, string id, string d) : username(uname), password(pass), role(r), sid(id), department(d) {}
+    User() : username(""), password(""), role(""), sid(""), college("") {}
+    User(string uname, string pass, string r, string id, string d) : username(uname), password(pass), role(r), sid(id), college(d) {}
 
     string getUsername() const { return username; }
     string getPassword() const { return password; }
     string getRole() const { return role; }
     string getSid() const { return sid; }
-    string getDepartment() const { return department; }
+    string getCollege() const { return college; }
 
     void setUsername(const string &u)
     { // Accepts a string argument
@@ -42,9 +42,9 @@ public:
         role = r;
     }
 
-    void setDepartment(const string &d)
+    void setCollege(const string &d)
     { // Accepts a string argument
-        department = d;
+        college = d;
     }
     void setSid(const string &id)
     { // Accepts a string argument
@@ -57,7 +57,7 @@ struct Message
 };
 struct Ticket
 {
-    string studentName, studentId, concern, date, professor, status, role, department, scheduledMeeting;
+    string studentName, studentId, concern, date, professor, status, role, college, scheduledMeeting;
 };
 
 int rating;
@@ -225,37 +225,37 @@ void registerUser()
         registerUser();
     }
 
-    char departmentInputInt;
+    char collegeInputInt;
     do
     {
         cout << setw(3) << " " << "===========================================\n";
-        cout << setw(3) << " " << "Enter Department-Options(Enter # only):\n";
+        cout << setw(3) << " " << "Enter College-Options(Enter # only):\n";
         cout << setw(3) << " " << "(1) College of Engineering and Architecture\n";
         cout << setw(3) << " " << "(2) College of Computer Studies\n";
         cout << setw(3) << " " << "(3) College of Business Education\n";
         cout << setw(3) << " " << "(4) College of Arts and Sciences\n";
-        cout << setw(3) << " " << "Department: ";
-        cin >> departmentInputInt;
+        cout << setw(3) << " " << "College: ";
+        cin >> collegeInputInt;
 
-        switch (departmentInputInt)
+        switch (collegeInputInt)
         {
         case '1':
-            user.setDepartment("CEA");
+            user.setCollege("CEA");
             break;
         case '2':
-            user.setDepartment("CCS");
+            user.setCollege("CCS");
             break;
         case '3':
-            user.setDepartment("CBE");
+            user.setCollege("CBE");
             break;
         case '4':
-            user.setDepartment("CAS");
+            user.setCollege("CAS");
             break;
         default:
             cout << "Invalid input!\n";
             break;
         }
-    } while (departmentInputInt != '1' && departmentInputInt != '2' && departmentInputInt != '3' && departmentInputInt != '4');
+    } while (collegeInputInt != '1' && collegeInputInt != '2' && collegeInputInt != '3' && collegeInputInt != '4');
 
     char roleInput;
     cout << setw(3) << " " << "Enter role ((s)student/(p)professor): ";
@@ -286,7 +286,7 @@ void registerUser()
     ofstream reg("accounts.txt", ios::app);
     if (reg.is_open())
     {
-        reg << user.getUsername() << setw(10) << user.getPassword() << setw(10) << user.getDepartment() << setw(10) << user.getRole() << setw(10) << user.getSid() << endl;
+        reg << user.getUsername() << setw(10) << user.getPassword() << setw(10) << user.getCollege() << setw(10) << user.getRole() << setw(10) << user.getSid() << endl;
         reg.close();
         clearscreen();
         cout << "Registration Successful!\n";
@@ -319,7 +319,7 @@ void login()
 
         if (input.is_open())
         {
-            while (input >> luname >> lpass >> ticket.department >> ticket.role >> ticket.studentId)
+            while (input >> luname >> lpass >> ticket.college >> ticket.role >> ticket.studentId)
             {
                 if (luname == id && lpass == pass)
                 {
@@ -328,7 +328,7 @@ void login()
                         ticket.studentName = luname;
                         user.setUsername(luname);
                         user.setRole(ticket.role);
-                        user.setDepartment(ticket.department);
+                        user.setCollege(ticket.college);
                         clearscreen();
                         studentsInterface();
                         return; // Exit after successful student login
@@ -338,7 +338,7 @@ void login()
                         ticket.professor = luname;
                         user.setUsername(luname);
                         user.setRole(ticket.role);
-                        user.setDepartment(ticket.department);
+                        user.setCollege(ticket.college);
                         clearscreen();
                         professorsInterface();
                         return; // Exit after successful professor login
@@ -393,9 +393,9 @@ void retrievePassword()
 void studentsInterface()
 {
     int action;
-    string departmentName = user.getDepartment();
+    string collegeName = user.getCollege();
 
-    cout << "Welcome, student " << ticket.studentName << " of " << departmentName << endl;
+    cout << "Welcome, student " << ticket.studentName << " of " << collegeName << endl;
     cout << "\n";
     while (true)
     {
@@ -463,9 +463,9 @@ void studentsInterface()
 
 void professorsInterface()
 {
-    string departmentName = user.getDepartment();
+    string collegeName = user.getCollege();
     int action;
-    cout << "Welcome, professor " << ticket.professor << " of " << departmentName << endl;
+    cout << "Welcome, professor " << ticket.professor << " of " << collegeName << endl;
     cout << "\n";
     while (true)
     {
@@ -667,7 +667,7 @@ void viewTickets()
 
 void addTickets()
 {
-    string concern, concern1, professor, departmentName;
+    string concern, concern1, professor, collegeName;
 
     int concernChoice;
     char back;
@@ -763,7 +763,7 @@ void addTickets()
     ofstream ticketFile(stufile, ios::app);
     if (ticketFile.is_open())
     {
-        ticketFile << "Department: " << ticket.department << endl;
+        ticketFile << "College: " << ticket.college << endl;
         ticketFile << "Student: " << ticket.studentName << endl;
         ticketFile << "Student ID: " << ticket.studentId << endl;
         ticketFile << "Ticket ID: " << ticketno << endl;
@@ -788,7 +788,7 @@ void addTickets()
     ofstream proticket(profile, ios::app);
     if (proticket.is_open())
     {
-        proticket << "Department: " << ticket.department << endl;
+        proticket << "College: " << ticket.college << endl;
         proticket << "Student: " << ticket.studentName << endl;
         proticket << "Student ID: " << ticket.studentId << endl;
         proticket << "Ticket ID: " << ticketno << endl;
