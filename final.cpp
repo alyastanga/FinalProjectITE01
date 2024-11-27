@@ -3,6 +3,7 @@
 #include <string>
 #include <cmath>
 #include <cstdlib>
+#include <cstdio>
 #include <ctime>
 #include <limits>
 #include <iomanip>
@@ -15,23 +16,22 @@ using namespace std;
 class User
 {
 private:
-    string username, password, role, sid, department;
+    string username, password, role, sid, college;
 
 public:
-    User() : username(""), password(""), role(""), sid(""), department("") {}
-    User(string uname, string pass, string r, string id, string d) : username(uname), password(pass), role(r), sid(id), department(d) {}
+    User() : username(""), password(""), role(""), sid(""), college("") {}
+    User(string uname, string pass, string r, string id, string d) : username(uname), password(pass), role(r), sid(id), college(d) {}
 
     string getUsername() const { return username; }
     string getPassword() const { return password; }
     string getRole() const { return role; }
     string getSid() const { return sid; }
-    string getDepartment() const { return department; }
+    string getCollege() const { return college; }
 
     void setUsername(const string &u)
     { // Accepts a string argument
         username = u;
     }
-
     void setPassword()
     {
         cin >> password;
@@ -42,9 +42,9 @@ public:
         role = r;
     }
 
-    void setDepartment(const string &d)
+    void setCollege(const string &d)
     { // Accepts a string argument
-        department = d;
+        college = d;
     }
     void setSid(const string &id)
     { // Accepts a string argument
@@ -57,13 +57,15 @@ struct Message
 };
 struct Ticket
 {
-    string studentName, studentId, concern, date, professor, status, role, department, scheduledMeeting;
+    string studentName, studentId, concern, date, professor, status, role, college, scheduledMeeting;
 };
+
 int rating;
 struct Sched
 {
     string days[7];
-    Sched() { // Corrected constructor name
+    Sched()
+    { // Corrected constructor name
         days[0] = "Monday: ";
         days[1] = "Tuesday: ";
         days[2] = "Wednesday: ";
@@ -74,7 +76,6 @@ struct Sched
     }
     string time[7];
 };
-
 
 Message message;
 User user;
@@ -102,7 +103,6 @@ void viewSched();
 bool isDayOfWeek(const std::string &line, const Sched &sched);
 void backs(string back);
 void cont();
-
 
 int main()
 {
@@ -168,6 +168,7 @@ void clearscreen()
     system("clear"); // Unix/Linux/Mac
 #endif
 }
+
 void backs(string back)
 {
     if (back == "q")
@@ -193,11 +194,14 @@ void registerUser()
 
     ifstream check("accounts.txt");
     string checkname;
-    if(check.is_open()){
-        while(check >> checkname){
-            if(checkname == uname){
+    if (check.is_open())
+    {
+        while (check >> checkname)
+        {
+            if (checkname == uname)
+            {
                 cout << "Username already exists!\n";
-                cout<< "Try another username...\n";
+                cout << "Try another username...\n";
                 cin.ignore();
                 cin.get();
                 clearscreen();
@@ -212,49 +216,50 @@ void registerUser()
     backs(pass2);
     cout << setw(3) << " " << "Confirm password: ";
     cin >> pass;
-    if(pass != user.getPassword()){
+    if (pass != user.getPassword())
+    {
         cout << "Password does not match!\n";
-        cout<< "Press Enter to continue...";
+        cout << "Press Enter to continue...";
         cin.ignore();
         cin.get();
         clearscreen();
         registerUser();
     }
 
-    char departmentInputInt;
+    char collegeInputInt;
     do
     {
         cout << setw(3) << " " << "===========================================\n";
-        cout << setw(3) << " " << "Enter Department-Options(Enter # only):\n";
+        cout << setw(3) << " " << "Enter College-Options(Enter # only):\n";
         cout << setw(3) << " " << "(1) College of Engineering and Architecture\n";
         cout << setw(3) << " " << "(2) College of Computer Studies\n";
         cout << setw(3) << " " << "(3) College of Business Education\n";
         cout << setw(3) << " " << "(4) College of Arts and Sciences\n";
-        cout << setw(3) << " " << "Department: ";
-        cin >> departmentInputInt;
+        cout << setw(3) << " " << "College: ";
+        cin >> collegeInputInt;
 
-        switch (departmentInputInt)
+        switch (collegeInputInt)
         {
         case '1':
-            user.setDepartment("CEA");
+            user.setCollege("CEA");
             break;
         case '2':
-            user.setDepartment("CCS");
+            user.setCollege("CCS");
             break;
         case '3':
-            user.setDepartment("CBE");
+            user.setCollege("CBE");
             break;
         case '4':
-            user.setDepartment("CAS");
+            user.setCollege("CAS");
             break;
         default:
             cout << "Invalid input!\n";
             break;
         }
-    } while (departmentInputInt != '1' && departmentInputInt != '2' && departmentInputInt != '3' && departmentInputInt != '4');
+    } while (collegeInputInt != '1' && collegeInputInt != '2' && collegeInputInt != '3' && collegeInputInt != '4');
 
     char roleInput;
-    cout << setw(3) << " " <<"Enter role ((s)student/(p)professor): ";
+    cout << setw(3) << " " << "Enter role ((s)student/(p)professor): ";
     cin >> roleInput;
     string sidInput;
     switch (roleInput)
@@ -282,7 +287,7 @@ void registerUser()
     ofstream reg("accounts.txt", ios::app);
     if (reg.is_open())
     {
-        reg << user.getUsername() << setw(10) << user.getPassword() << setw(10) << user.getDepartment() << setw(10) << user.getRole() << setw(10) << user.getSid() << endl;
+        reg << user.getUsername() << setw(10) << user.getPassword() << setw(10) << user.getCollege() << setw(10) << user.getRole() << setw(10) << user.getSid() << endl;
         reg.close();
         clearscreen();
         cout << "Registration Successful!\n";
@@ -315,7 +320,7 @@ void login()
 
         if (input.is_open())
         {
-            while (input >> luname >> lpass >> ticket.department >> ticket.role >> ticket.studentId)
+            while (input >> luname >> lpass >> ticket.college >> ticket.role >> ticket.studentId)
             {
                 if (luname == id && lpass == pass)
                 {
@@ -324,7 +329,7 @@ void login()
                         ticket.studentName = luname;
                         user.setUsername(luname);
                         user.setRole(ticket.role);
-                        user.setDepartment(ticket.department);
+                        user.setCollege(ticket.college);
                         clearscreen();
                         studentsInterface();
                         return; // Exit after successful student login
@@ -334,7 +339,7 @@ void login()
                         ticket.professor = luname;
                         user.setUsername(luname);
                         user.setRole(ticket.role);
-                        user.setDepartment(ticket.department);
+                        user.setCollege(ticket.college);
                         clearscreen();
                         professorsInterface();
                         return; // Exit after successful professor login
@@ -355,7 +360,7 @@ void retrievePassword()
 {
     int count = 0;
     string fuse, user, pass, role, sid, dep;
-    cout <<"Retrieve Password\nBack(q)\n\n";
+    cout << "Retrieve Password\nBack(q)\n\n";
     cout << "Enter username: ";
     cin >> fuse;
     backs(fuse);
@@ -384,15 +389,14 @@ void retrievePassword()
         cout << "Username not found!\n";
         retrievePassword();
     }
-    
 }
 
 void studentsInterface()
 {
     int action;
-    string departmentName = user.getDepartment();
+    string collegeName = user.getCollege();
 
-    cout << "Welcome, student " << ticket.studentName << " of " << departmentName << endl;
+    cout << "Welcome, student " << ticket.studentName << " of " << collegeName << endl;
     cout << "\n";
     while (true)
     {
@@ -436,7 +440,7 @@ void studentsInterface()
         Messenger();
         studentsInterface();
         break;
-    case 5: 
+    case 5:
         clearscreen();
         rateResolvedTicket();
         break;
@@ -460,9 +464,9 @@ void studentsInterface()
 
 void professorsInterface()
 {
-    string departmentName = user.getDepartment();
+    string collegeName = user.getCollege();
     int action;
-    cout << "Welcome, professor " << ticket.professor << " of " << departmentName << endl;
+    cout << "Welcome, professor " << ticket.professor << " of " << collegeName << endl;
     cout << "\n";
     while (true)
     {
@@ -527,6 +531,62 @@ void professorsInterface()
         break;
     }
 }
+void markAllAsRead(const string &filename)
+{
+    ifstream inputFile(filename);
+    if (!inputFile.is_open())
+    {
+        cout << "Error: Unable to open file " << filename << " for reading." << endl;
+        return;
+    }
+
+    ofstream tempFile("temp_" + filename);
+    if (!tempFile.is_open())
+    {
+        cout << "Error: Unable to create temporary file for writing." << endl;
+        inputFile.close();
+        return;
+    }
+
+    string line;
+    bool foundNew = false;
+
+    while (getline(inputFile, line))
+    {
+        size_t pos = line.find("Read Status: new");
+        if (pos != string::npos)
+        {
+            line.replace(pos, 17, "Read Status: read");
+            foundNew = true;
+        }
+        tempFile << line << endl;
+    }
+
+    inputFile.close();
+    tempFile.close();
+
+    if (foundNew)
+    {
+        if (remove(filename.c_str()) != 0)
+        {
+            perror(("Error deleting original file " + filename).c_str());
+        }
+        else if (rename(("temp_" + filename).c_str(), filename.c_str()) != 0)
+        {
+            perror(("Error renaming temporary file to " + filename).c_str());
+        }
+        else
+        {
+            cout << "All tickets have been marked as read." << endl;
+        }
+    }
+    else
+    {
+        // Clean up temporary file if nothing was changed
+        remove(("temp_" + filename).c_str());
+        cout << "No 'new' tickets were found to mark as read." << endl;
+    }
+}
 
 void viewTickets()
 {
@@ -553,7 +613,18 @@ void viewTickets()
             cout << "Unable to open file.\n";
         }
 
-        cont();
+        cout << "\nWould you like to mark all tickets as read? (Y/N): ";
+        char choice;
+        cin >> choice;
+        if (choice == 'Y' || choice == 'y')
+        {
+            markAllAsRead(filename);
+        }
+
+        cout << "\nPress Enter to continue...";
+        cin.ignore();
+        cin.get();
+        clearscreen();
         studentsInterface();
     }
     else if (role == "p")
@@ -574,7 +645,19 @@ void viewTickets()
         {
             cout << "Error opening the tickets file.\n";
         }
-        cont();
+
+        cout << "\nWould you like to mark all tickets as read? (Y/N): ";
+        char choice;
+        cin >> choice;
+        if (choice == 'Y' || choice == 'y')
+        {
+            markAllAsRead(filename);
+        }
+
+        cout << "\nPress Enter to continue...";
+        cin.ignore();
+        cin.get();
+        clearscreen();
         professorsInterface();
     }
     else
@@ -585,7 +668,7 @@ void viewTickets()
 
 void addTickets()
 {
-    string concern, concern1, professor, departmentName;
+    string concern, concern1, professor, collegeName;
 
     int concernChoice;
     char back;
@@ -681,7 +764,7 @@ void addTickets()
     ofstream ticketFile(stufile, ios::app);
     if (ticketFile.is_open())
     {
-        ticketFile << "Department: " << ticket.department << endl;
+        ticketFile << "College: " << ticket.college << endl;
         ticketFile << "Student: " << ticket.studentName << endl;
         ticketFile << "Student ID: " << ticket.studentId << endl;
         ticketFile << "Ticket ID: " << ticketno << endl;
@@ -691,6 +774,7 @@ void addTickets()
         ticketFile << "Scheduled Meeting: " << ticket.scheduledMeeting << endl;
         ticketFile << "Professor: " << ticket.professor << endl;
         ticketFile << "Status: open" << endl;
+        ticketFile << "Read Status: new" << endl;
         ticketFile << "Date Resolved: " << "Pending" << endl; // New field for resolution timestamp
         ticketFile << "----------------------------------------" << endl;
         ticketFile.close();
@@ -705,7 +789,7 @@ void addTickets()
     ofstream proticket(profile, ios::app);
     if (proticket.is_open())
     {
-        proticket << "Department: " << ticket.department << endl;
+        proticket << "College: " << ticket.college << endl;
         proticket << "Student: " << ticket.studentName << endl;
         proticket << "Student ID: " << ticket.studentId << endl;
         proticket << "Ticket ID: " << ticketno << endl;
@@ -715,6 +799,7 @@ void addTickets()
         proticket << "Scheduled Meeting: " << ticket.scheduledMeeting << endl;
         proticket << "Professor: " << ticket.professor << endl;
         proticket << "Status: open" << endl;
+        proticket << "Read Status: new" << endl;
         proticket << "Date Resolved: " << "Pending" << endl;
         proticket << "----------------------------------------" << endl;
         proticket.close();
@@ -730,13 +815,14 @@ void addTickets()
     if (choice == 'Y' || choice == 'y')
     {
         clearscreen();
-        addTickets(); 
-    } else {
+        addTickets();
+    }
+    else
+    {
         clearscreen();
         studentsInterface();
     }
 }
-
 
 void resolveTicket()
 {
@@ -892,48 +978,55 @@ void resolveTicket()
     if (choice == 'y' || choice == 'Y')
     {
         clearscreen();
-        resolveTicket(); 
-    } else {
+        resolveTicket();
+    }
+    else
+    {
         clearscreen();
         professorsInterface();
     }
 }
-void rateResolvedTicket() {
+void rateResolvedTicket()
+{
     string ticketId;
     string studentName;
 
     cout << "Enter your ticket ID: ";
     cin >> ticketId;
-    cin.ignore();  // Clear the newline character left in the input buffer
+    cin.ignore(); // Clear the newline character left in the input buffer
 
     cout << "Enter your name: ";
-    getline(cin, studentName);  // Use getline to allow spaces in the name
+    getline(cin, studentName); // Use getline to allow spaces in the name
 
     ifstream studentFile(studentName + "_tickets.txt");
-    ofstream tempFile("temp_student_tickets.txt");  // Temporary file for modified data
+    ofstream tempFile("temp_student_tickets.txt"); // Temporary file for modified data
     bool ticketFound = false;
-    int studentRating = 0;  // Variable to store the rating
-    string ratingDescription;  // Variable to store the rating description
+    int studentRating = 0;    // Variable to store the rating
+    string ratingDescription; // Variable to store the rating description
 
-    if (studentFile.is_open() && tempFile.is_open()) {
+    if (studentFile.is_open() && tempFile.is_open())
+    {
         string line;
-        while (getline(studentFile, line)) {
-            if (line.find("Ticket ID: " + ticketId) != string::npos) {  // If the ticket ID matches
+        while (getline(studentFile, line))
+        {
+            if (line.find("Ticket ID: " + ticketId) != string::npos)
+            { // If the ticket ID matches
                 ticketFound = true;
-                tempFile << line << endl;  // Write the ticket ID line
-                getline(studentFile, line);  // Read the next line (Concern)
-                tempFile << line << endl;  // Write the Concern line
-                getline(studentFile, line);  // Read the next line (Date)
-                tempFile << line << endl;  // Write the Date line
-                getline(studentFile, line);  // Read the next line (Professor)
+                tempFile << line << endl;   // Write the ticket ID line
+                getline(studentFile, line); // Read the next line (Concern)
+                tempFile << line << endl;   // Write the Concern line
+                getline(studentFile, line); // Read the next line (Date)
+                tempFile << line << endl;   // Write the Date line
+                getline(studentFile, line); // Read the next line (Professor)
                 tempFile << line << endl;
-                getline(studentFile, line);  // Read the next line (Professor)
-                tempFile << line << endl;  // Write the Professor line
-                getline(studentFile, line);  // Read the next line (Status)
+                getline(studentFile, line); // Read the next line (Professor)
+                tempFile << line << endl;   // Write the Professor line
+                getline(studentFile, line); // Read the next line (Status)
                 tempFile << line << endl;
                 getline(studentFile, line);
                 // Check if the ticket is resolved before allowing the student to rate
-                if (line.find("resolved") != string::npos) {
+                if (line.find("resolved") != string::npos)
+                {
                     // Display the rating scale and explanations
                     cout << "Please rate the resolution of this ticket (1 = Poor, 5 = Excellent):\n";
                     cout << "1 = Poor\n";
@@ -945,102 +1038,130 @@ void rateResolvedTicket() {
                     cin >> studentRating;
 
                     // Validate rating input
-                    while (studentRating < 1 || studentRating > 5) {
+                    while (studentRating < 1 || studentRating > 5)
+                    {
                         cout << "Invalid input. Please enter a rating between 1 and 5: ";
                         cin >> studentRating;
                     }
 
                     // Set the corresponding rating description
-                    switch (studentRating) {
-                        case 1:
-                            ratingDescription = "Poor";
-                            break;
-                        case 2:
-                            ratingDescription = "Fair";
-                            break;
-                        case 3:
-                            ratingDescription = "Good";
-                            break;
-                        case 4:
-                            ratingDescription = "Very Good";
-                            break;
-                        case 5:
-                            ratingDescription = "Excellent";
-                            break;
-                        default:
-                            ratingDescription = "Unknown";
-                            break;
+                    switch (studentRating)
+                    {
+                    case 1:
+                        ratingDescription = "Poor";
+                        break;
+                    case 2:
+                        ratingDescription = "Fair";
+                        break;
+                    case 3:
+                        ratingDescription = "Good";
+                        break;
+                    case 4:
+                        ratingDescription = "Very Good";
+                        break;
+                    case 5:
+                        ratingDescription = "Excellent";
+                        break;
+                    default:
+                        ratingDescription = "Unknown";
+                        break;
                     }
 
                     // Add the rating and description to the student ticket file
-                    tempFile << "Student Rating: " << studentRating << "/5 (" << ratingDescription << ")" << endl;  // Add rating and description
+                    tempFile << "Student Rating: " << studentRating << "/5 (" << ratingDescription << ")" << endl; // Add rating and description
                     cout << "Thank you for your feedback! Your rating of " << studentRating << "/5 (" << ratingDescription << ") has been recorded.\n";
-                } else {
-                    cout << "This ticket has not been resolved yet. You can rate it once it is resolved.\n";
-                    tempFile << line << endl;  // If not resolved, don't rate
                 }
-            } else {
-                tempFile << line << endl;  // Write the rest of the lines to the temp file
+                else
+                {
+                    cout << "This ticket has not been resolved yet. You can rate it once it is resolved.\n";
+                    tempFile << line << endl; // If not resolved, don't rate
+                }
+            }
+            else
+            {
+                tempFile << line << endl; // Write the rest of the lines to the temp file
             }
         }
 
         studentFile.close();
         tempFile.close();
 
-        if (remove((studentName + "_tickets.txt").c_str()) != 0) {
+        if (remove((studentName + "_tickets.txt").c_str()) != 0)
+        {
             perror("Error deleting old file");
-        } else if (rename("temp_student_tickets.txt", (studentName + "_tickets.txt").c_str()) != 0) {
+        }
+        else if (rename("temp_student_tickets.txt", (studentName + "_tickets.txt").c_str()) != 0)
+        {
             perror("Error renaming new file");
-        } else {
-            if (!ticketFound) {
+        }
+        else
+        {
+            if (!ticketFound)
+            {
                 cout << "Ticket ID " << ticketId << " not found.\n";
             }
         }
-    } else {
+    }
+    else
+    {
         cout << "Error opening student ticket file.\n";
     }
 
     // Now, update the professor's file with the student's rating if the ticket is resolved
-    if (ticketFound) {
-        cout << "Updating professor's file...\n";  // Debugging message
-        ifstream professorFile(ticket.professor + "_tickets.txt");  // Open professor's ticket file
+    if (ticketFound)
+    {
+        cout << "Updating professor's file...\n";                  // Debugging message
+        ifstream professorFile(ticket.professor + "_tickets.txt"); // Open professor's ticket file
         ofstream professorTempFile("temp_professor_tickets.txt");  // Temp file for professor's tickets
         bool professorTicketFound = false;
 
-        if (professorFile.is_open() && professorTempFile.is_open()) {
+        if (professorFile.is_open() && professorTempFile.is_open())
+        {
             string line;
-            while (getline(professorFile, line)) {
-                cout << "Reading line: " << line << endl;  // Debugging message
-                if (line.find("Ticket ID: " + ticketId) != string::npos) {  // If the ticket ID matches
+            while (getline(professorFile, line))
+            {
+                cout << "Reading line: " << line << endl; // Debugging message
+                if (line.find("Ticket ID: " + ticketId) != string::npos)
+                { // If the ticket ID matches
                     professorTicketFound = true;
-                    cout << "Ticket ID matched, adding rating...\n";  // Debugging message
-                    professorTempFile << line << endl;  // Write the ticket ID line
+                    cout << "Ticket ID matched, adding rating...\n"; // Debugging message
+                    professorTempFile << line << endl;               // Write the ticket ID line
 
                     // Copy the other lines related to the ticket, up to the Status line
-                    for (int i = 0; i < 7; ++i) {
+                    for (int i = 0; i < 7; ++i)
+                    {
                         getline(professorFile, line);
                         professorTempFile << line << endl;
                     }
 
                     // After all ticket details, add the rating
                     professorTempFile << "Student Rating: " << studentRating << "/5 (" << ratingDescription << ")" << endl;
-                    cout << "Rating added to professor's file.\n";  // Debugging message
-                } else {
-                    professorTempFile << line << endl;  // Write the rest of the lines to the temp file
+                    cout << "Rating added to professor's file.\n"; // Debugging message
+                }
+                else
+                {
+                    professorTempFile << line << endl; // Write the rest of the lines to the temp file
                 }
             }
             professorFile.close();
             professorTempFile.close();
 
             // Replace the original professor ticket file with the updated file
-            if (remove((ticket.professor + "_tickets.txt").c_str()) != 0) {
+            if (remove((ticket.professor + "_tickets.txt").c_str()) != 0)
+            {
                 perror("Error deleting professor's old file");
-            } else if (rename("temp_professor_tickets.txt", (ticket.professor + "_tickets.txt").c_str()) != 0) {
-                perror("Error renaming new professor file");
-            } else {
-                cout << "Professor's file successfully updated.\n";  // Debugging message
             }
-        } else {
+            else if (rename("temp_professor_tickets.txt", (ticket.professor + "_tickets.txt").c_str()) != 0)
+            {
+                perror("Error renaming new professor file");
+            }
+            else
+            {
+                cout << "Professor's file successfully updated.\n"; // Debugging message
+            }
+        }
+        else
+        {
             cout << "Error opening professor's ticket file.\n";
         }
     }
@@ -1051,127 +1172,178 @@ void rateResolvedTicket() {
 }
 void notifTickets()
 {
-    string username = user.getUsername();
-    string role = user.getRole();
-    string line, status;
-    status = "Status: open";
-    int newTicketCount = 0, newMessageCount = 0;
+    string username = user.getUsername(); // Current user's name
+    string role = user.getRole();         // Current user's role
+    string line;
+    int newTicketCount = 0, oldTicketCount = 0, newMessageCount = 0;
 
-    if (role == "s")
+    if (role == "s") // For Student
     {
         string studentFile = ticket.studentName + "_tickets.txt";
         ifstream stunotif(studentFile);
 
+        bool isResolved = false; // Flag to track if the current ticket is resolved
+
         if (stunotif.is_open())
         {
-            while (getline(stunotif, line))
+            while (getline(stunotif, line)) // Iterate through each line in the student's ticket file
             {
+                // Check for resolved tickets
                 if (line.find("Status: resolved") != string::npos)
                 {
+                    isResolved = true;
+                }
+                else if (isResolved && line.find("Read Status: new") != string::npos)
+                {
                     newTicketCount++;
+                    isResolved = false;
+                }
+                else if (isResolved && line.find("Read Status: old") != string::npos)
+                {
+                    oldTicketCount++;
+                    isResolved = false;
                 }
             }
             stunotif.close();
         }
 
-        // Check for new messages
+        // Check for new messages from the professor
         string chatFile = ticket.studentName + "_" + ticket.professor + ".txt";
         ifstream chatNotif(chatFile);
+
         if (chatNotif.is_open())
         {
+            bool isMessageBlock = false;
+            string recipient;
+
             while (getline(chatNotif, line))
             {
-                if (line.find(ticket.professor + ":") != string::npos)
-                { // Assume professor sends messages
-                    newMessageCount++;
+                // Detect the start of a message block
+                if (line.find("From:") != string::npos)
+                {
+                    isMessageBlock = true; // Start processing the message block
+                }
+                else if (isMessageBlock && line.find("To:") != string::npos)
+                {
+                    recipient = line.substr(4); // Extract the recipient's name
+
+                    // Check if the message is addressed to the current user
+                    if (recipient == username)
+                    {
+                        newMessageCount++;
+                        isMessageBlock = false; // End processing this message block
+                    }
+                }
+                else if (line.find("----------------------------------") != string::npos)
+                {
+                    isMessageBlock = false; // End of the message block
                 }
             }
             chatNotif.close();
         }
 
+        // Display results (only if there are new tickets or messages)
         if (newTicketCount > 0)
         {
-            cout << "\nYou have " << newTicketCount << " resolved ticket(s)!\n";
+            cout << "\nYou have " << newTicketCount << " resolved ticket(s) marked as new!" << endl;
         }
-        else
-        {
-            cout << "\nNo resolved tickets at the moment.\n";
-        }
-
         if (newMessageCount > 0)
         {
-            cout << "You have " << newMessageCount << " new message(s) from your professor.\n";
-        }
-        else
-        {
-            cout << "No new messages at the moment.\n";
+            cout << "You have " << newMessageCount << " new message(s) from your professor." << endl;
         }
     }
-    else if (role == "p")
+    else if (role == "p") // For Professor
     {
         string professorFile = ticket.professor + "_tickets.txt";
         ifstream pronotif(professorFile);
 
+        bool isResolved = false; // Flag to track if the current ticket is resolved
+
         if (pronotif.is_open())
         {
-            while (getline(pronotif, line))
+            while (getline(pronotif, line)) // Iterate through each line in the professor's ticket file
             {
-                if (line.find(status) != string::npos)
+                // Check for resolved tickets
+                if (line.find("Status: resolved") != string::npos)
+                {
+                    isResolved = true;
+                }
+                else if (isResolved && line.find("Read Status: new") != string::npos)
                 {
                     newTicketCount++;
+                    isResolved = false;
+                }
+                else if (isResolved && line.find("Read Status: old") != string::npos)
+                {
+                    oldTicketCount++;
+                    isResolved = false;
                 }
             }
             pronotif.close();
         }
 
-        // Check for new messages
+        // Check for new messages from students
         ifstream studentList("StudentsOf_" + ticket.professor + ".txt");
         string studentName;
+
         while (getline(studentList, studentName))
         {
             string chatFile = studentName + "_" + ticket.professor + ".txt";
             ifstream chatNotif(chatFile);
+
             if (chatNotif.is_open())
             {
+                bool isMessageBlock = false;
+                string recipient;
+
                 while (getline(chatNotif, line))
                 {
-                    if (line.find(studentName + ":") != string::npos)
-                    { // Assume student sends messages
-                        newMessageCount++;
+                    // Detect the start of a message block
+                    if (line.find("From:") != string::npos)
+                    {
+                        isMessageBlock = true; // Start processing the message block
+                    }
+                    else if (isMessageBlock && line.find("To:") != string::npos)
+                    {
+                        recipient = line.substr(4); // Extract the recipient's name
+
+                        // Check if the message is addressed to the current professor
+                        if (recipient == username)
+                        {
+                            newMessageCount++;
+                            isMessageBlock = false; // End processing this message block
+                        }
+                    }
+                    else if (line.find("----------------------------------") != string::npos)
+                    {
+                        isMessageBlock = false; // End of the message block
                     }
                 }
                 chatNotif.close();
             }
         }
 
+        // Display results (only if there are new tickets or messages)
         if (newTicketCount > 0)
         {
-            cout << "\nYou have " << newTicketCount << " new tickets to resolve!\n";
+            cout << "\nYou have " << newTicketCount << " resolved ticket(s) marked as new!" << endl;
         }
-        else
-        {
-            cout << "\nNo new tickets at the moment.\n";
-        }
-
         if (newMessageCount > 0)
         {
-            cout << "You have " << newMessageCount << " new message(s) from students.\n";
-        }
-        else
-        {
-            cout << "No new messages at the moment.\n";
+            cout << "You have " << newMessageCount << " new message(s) from students." << endl;
         }
     }
     else
     {
-        cout << "Invalid role!\n";
+        cout << "Invalid role!" << endl;
     }
 }
 
-void analytics() {
+void analytics()
+{
     int A1 = 0, A2 = 0, A3 = 0, A4 = 0, A5 = 0, A6 = 0, A7 = 0, A8 = 0, A9 = 0, A10 = 0;
     vector<int> durations; // To track resolution times
-    vector<int>ratings;
+    vector<int> ratings;
     float totPercent;
     string professorFile = ticket.professor + "_tickets.txt";
     ifstream analytics(professorFile);
@@ -1182,9 +1354,12 @@ void analytics() {
     int totalRating = 0;
     int ratingCount = 0;
 
-    if (analytics.is_open()) {
-        while (getline(analytics, line)) {
-            if (line.find("Ticket ID:") != string::npos) {
+    if (analytics.is_open())
+    {
+        while (getline(analytics, line))
+        {
+            if (line.find("Ticket ID:") != string::npos)
+            {
                 totalTickets++; // Increment totalTickets only when a new ticket is encountered
             }
             if (line.find("Concern: Grades and Assessments") != string::npos)
@@ -1209,12 +1384,15 @@ void analytics() {
                 A10++;
 
             // Look for the Date of Inquiry and Date Resolved
-            if (line.find("Date of Inquiry:") != string::npos) {
+            if (line.find("Date of Inquiry:") != string::npos)
+            {
                 createdDate = line.substr(line.find(":") + 2);
             }
-            else if (line.find("Date Resolved:") != string::npos) {
+            else if (line.find("Date Resolved:") != string::npos)
+            {
                 resolvedDate = line.substr(line.find(":") + 2);
-                if (resolvedDate != "Pending") {
+                if (resolvedDate != "Pending")
+                {
                     hasResolvedTickets = true;
                     struct tm tmCreated = {}, tmResolved = {};
                     strptime(createdDate.c_str(), "%Y-%m-%d %H:%M:%S", &tmCreated);
@@ -1224,8 +1402,9 @@ void analytics() {
                     durations.push_back(difftime(tResolved, tCreated) / 60);
                 }
             }
-        if (line.find("Student Rating:") != string::npos) {
-                size_t pos = line.find(":") + 2; // Skip past "Student Rating: "
+            if (line.find("Student Rating:") != string::npos)
+            {
+                size_t pos = line.find(":") + 2;        // Skip past "Student Rating: "
                 int rating = stoi(line.substr(pos, 1)); // Extract the rating number (e.g., "4" from "4/5")
                 ratings.push_back(rating);
                 totalRating += rating;
@@ -1240,11 +1419,19 @@ void analytics() {
     int totalTix = A1 + A2 + A3 + A4 + A5 + A6 + A7 + A8 + A9 + A10;
     float percentages[10] = {0};
 
-    if (totalTix > 0) {
-        for (int i = 0; i < 10; i++) {
-            int count = (i == 0) ? A1 : (i == 1) ? A2 : (i == 2) ? A3 : (i == 3) ? A4 : 
-                       (i == 4) ? A5 : (i == 5) ? A6 : (i == 6) ? A7 : (i == 7) ? A8 : 
-                       (i == 8) ? A9 : A10;
+    if (totalTix > 0)
+    {
+        for (int i = 0; i < 10; i++)
+        {
+            int count = (i == 0) ? A1 : (i == 1) ? A2
+                                    : (i == 2)   ? A3
+                                    : (i == 3)   ? A4
+                                    : (i == 4)   ? A5
+                                    : (i == 5)   ? A6
+                                    : (i == 6)   ? A7
+                                    : (i == 7)   ? A8
+                                    : (i == 8)   ? A9
+                                                 : A10;
             percentages[i] = (static_cast<float>(count) / totalTix) * 100;
         }
     }
@@ -1253,7 +1440,7 @@ void analytics() {
     cout << "\n===============================================================================\n";
     cout << setw(33) << " " << "Concern Analytics\n\n";
     cout << left << setw(50) << "Concern Categories:" << "Frequency   Percentage\n";
-    
+
     // Store category names in an array for cleaner code
     string categories[] = {
         "Grades and Assessments",
@@ -1265,47 +1452,63 @@ void analytics() {
         "Academic Advising",
         "Personal Issues Affecting Academic Performance",
         "Technical Issues",
-        "General Inquiries"
-    };
+        "General Inquiries"};
 
     // Print all concern categories with fixed formatting
     int counts[] = {A1, A2, A3, A4, A5, A6, A7, A8, A9, A10};
-    for (int i = 0; i < 10; i++) {
-        if (counts[i] > 0) {
-        cout << left << setw(54) << (categories[i] + " ") 
-             << setw(10) << counts[i] 
-             << fixed << setprecision(1) << setw(2) << percentages[i] << "%\n";
+    for (int i = 0; i < 10; i++)
+    {
+        if (counts[i] > 0)
+        {
+            cout << left << setw(54) << (categories[i] + " ")
+                 << setw(10) << counts[i]
+                 << fixed << setprecision(1) << setw(2) << percentages[i] << "%\n";
         }
     }
-    for (int i = 0; i < 10; i++) {
-        if (percentages[i] > 0) {
+    for (int i = 0; i < 10; i++)
+    {
+        if (percentages[i] > 0)
+        {
             totPercent += percentages[i];
         }
     }
-    cout << left <<  setw(54) << "Total Tickets Created: " << setw(10) << totalTickets << fixed << setprecision(1) << setw(2) << totPercent << "%" << endl;
-    cout.fill('-');cout.width(80);cout << "\n";cout.fill(' ');
-    cout<<endl;
+    cout << left << setw(54) << "Total Tickets Created: " << setw(10) << totalTickets << fixed << setprecision(1) << setw(2) << totPercent << "%" << endl;
+    cout.fill('-');
+    cout.width(80);
+    cout << "\n";
+    cout.fill(' ');
+    cout << endl;
     // Calculate and display average resolution time
-    if (!durations.empty()) {
+    if (!durations.empty())
+    {
         double avgDuration = accumulate(durations.begin(), durations.end(), 0.0) / durations.size();
         int hours = static_cast<int>(avgDuration) / 60;
         int minutes = static_cast<int>(avgDuration) % 60;
-        
+
         cout << "\nAverage Resolution Time: ";
-        if (hours > 0) {
+        if (hours > 0)
+        {
             cout << hours << " hour" << (hours != 1 ? "s" : "") << " and ";
         }
         cout << minutes << " minute" << (minutes != 1 ? "s" : "") << "\n";
-    } else {
+    }
+    else
+    {
         cout << "\nNo resolved tickets yet.\n";
     }
-    cout.fill('-');cout.width(80);cout << "\n";cout.fill(' ');
-    cout<<endl;
+    cout.fill('-');
+    cout.width(80);
+    cout << "\n";
+    cout.fill(' ');
+    cout << endl;
 
-    if (ratingCount > 0) {
+    if (ratingCount > 0)
+    {
         float avgRating = static_cast<float>(totalRating) / ratingCount;
         cout << "\nAverage Professor Rating: " << fixed << setprecision(2) << avgRating << "/5\n\n";
-    } else {
+    }
+    else
+    {
         cout << "\nNo ratings yet.\n";
     }
 
@@ -1314,7 +1517,8 @@ void analytics() {
     professorsInterface();
 }
 
-void profSched() {
+void profSched()
+{
     cout << "Enter your Schedule (hh:mm[in] - hh:mm[out]):\n";
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
     for (int i = 0; i < 7; ++i)
@@ -1326,7 +1530,7 @@ void profSched() {
     ofstream pSched("Schedule.txt", ios::app);
     if (pSched.is_open())
     {
-        pSched <<ticket.professor << endl;
+        pSched << ticket.professor << endl;
         for (int i = 0; i < 7; ++i)
         {
             pSched << sched.days[i] << sched.time[i] << endl;
@@ -1406,59 +1610,94 @@ void chooseSched()
             cout << "Please enter a number between 1 and " << professors.size() << endl;
         }
     }
-    cout << "You have chosen Professor, " << ticket.professor << ".\n\n";;
+    cout << "You have chosen Professor, " << ticket.professor << ".\n\n";
+    ;
 
     ifstream appoint(ticket.professor + "_tickets.txt");
     int mon = 0, tue = 0, wed = 0, thu = 0, fri = 0, sat = 0, sun = 0;
-    if (appoint.is_open()) {
-         string line;
-        while (getline(appoint, line)) {
-            if (line.find("Monday:") != string::npos) {
+    if (appoint.is_open())
+    {
+        string line;
+        while (getline(appoint, line))
+        {
+            if (line.find("Monday:") != string::npos)
+            {
                 mon++;
-            } else if (line.find("Tuesday:") != string::npos) {
+            }
+            else if (line.find("Tuesday:") != string::npos)
+            {
                 tue++;
-            } else if (line.find("Wednesday:") != string::npos) {
+            }
+            else if (line.find("Wednesday:") != string::npos)
+            {
                 wed++;
-            } else if (line.find("Thursday:") != string::npos) {
+            }
+            else if (line.find("Thursday:") != string::npos)
+            {
                 thu++;
-            } else if (line.find("Friday:") != string::npos) {
+            }
+            else if (line.find("Friday:") != string::npos)
+            {
                 fri++;
-            } else if (line.find("Saturday:") != string::npos) {
+            }
+            else if (line.find("Saturday:") != string::npos)
+            {
                 sat++;
-            } else if (line.find("Sunday:") != string::npos) {
+            }
+            else if (line.find("Sunday:") != string::npos)
+            {
                 sun++;
             }
         }
         appoint.close();
-    } else {
+    }
+    else
+    {
         cout << "Error opening file.\n";
     }
 
-    if (mon >= 2 && tue >= 2 && wed >= 2 && thu >= 2 && fri >= 2 && sat >= 2 && sun >= 2) {
+    if (mon >= 2 && tue >= 2 && wed >= 2 && thu >= 2 && fri >= 2 && sat >= 2 && sun >= 2)
+    {
         cout << "All slots are full for Professor " << ticket.professor << ". Please choose another professor.\n";
         chooseSched();
-    } else {
-        if (mon >= 2) {
+    }
+    else
+    {
+        if (mon >= 2)
+        {
             cout << "The slot is full on Monday!\n";
-        } if (tue >= 2) {
+        }
+        if (tue >= 2)
+        {
             cout << "The slot is full on Tuesday!\n";
-        } if (wed >= 2) {
+        }
+        if (wed >= 2)
+        {
             cout << "The slot is full on Wednesday!\n";
-        } if (thu >= 2) {
+        }
+        if (thu >= 2)
+        {
             cout << "The slot is full on Thursday!\n";
-        } if (fri >= 2) {
+        }
+        if (fri >= 2)
+        {
             cout << "The slot is full on Friday!\n";
-        } if (sat >= 2) {
+        }
+        if (sat >= 2)
+        {
             cout << "The slot is full on Saturday!\n";
-        }  if (sun >= 2) {
+        }
+        if (sun >= 2)
+        {
             cout << "The slot is full on Sunday!\n";
         }
     }
 
-       cout << "\nChoose the available time with Professor, " << ticket.professor << "\n";
+    cout << "\nChoose the available time with Professor, " << ticket.professor << "\n";
 
     ifstream profss("Schedule.txt");
-    if (!profss) {
+    if (!profss)
+    {
         cerr << "Error: File could not be opened." << endl;
         return;
     }
@@ -1472,68 +1711,82 @@ void chooseSched()
     days.push_back(make_pair("Saturday:", 6));
     days.push_back(make_pair("Sunday:", 7));
 
-    //string line;
+    // string line;
     bool foundProfSection = false;
-    vector<pair<string, string> > availableDays;  // To hold day and time slot pairs
+    vector<pair<string, string> > availableDays; // To hold day and time slot pairs
 
-    while (getline(profss, line)) {
-        if (line == ticket.professor) {
+    while (getline(profss, line))
+    {
+        if (line == ticket.professor)
+        {
             foundProfSection = true;
             continue;
         }
 
-        if (foundProfSection) {
+        if (foundProfSection)
+        {
             // Loop through the days and check for the professor's schedule
-            for (size_t i = 0; i < days.size(); ++i) {
-                if (line.find(days[i].first) == 0) {
+            for (size_t i = 0; i < days.size(); ++i)
+            {
+                if (line.find(days[i].first) == 0)
+                {
                     // Add the available slot (day and time)
                     availableDays.push_back(make_pair(days[i].first, line.substr(days[i].first.size())));
                     cout << days[i].second << ". " << days[i].first << " " << line.substr(days[i].first.size()) << endl;
                 }
             }
-            if (line.empty()) {
+            if (line.empty())
+            {
                 break; // End of professor's schedule section
             }
         }
     }
 
-    if (!foundProfSection) {
+    if (!foundProfSection)
+    {
         cerr << "Error: Professor's schedule not found in the file." << endl;
         profss.close();
         return;
     }
 
-    if (availableDays.empty()) {
+    if (availableDays.empty())
+    {
         cout << "No available days found for Professor " << ticket.professor << "." << endl;
         return;
     }
-    cout<<"\n";
-    while (true) {
+    cout << "\n";
+    while (true)
+    {
         cout << "Which Day(# only): ";
         int dayChoice;
         cin >> dayChoice;
         cin.ignore(); // Ignore the newline character left in the input buffer
 
-        if (dayChoice > 0 && dayChoice <= availableDays.size()) {
-            if ((availableDays[dayChoice - 1].first == "Monday:" && mon >= 2) || 
-                (availableDays[dayChoice - 1].first == "Tuesday:" && tue >= 2) || 
-                (availableDays[dayChoice - 1].first == "Wednesday:" && wed >= 2) || 
-                (availableDays[dayChoice - 1].first == "Thursday:" && thu >= 2) || 
-                (availableDays[dayChoice - 1].first == "Friday:" && fri >= 2) || 
-                (availableDays[dayChoice - 1].first == "Saturday:" && sat >= 2) || 
-                (availableDays[dayChoice - 1].first == "Sunday:" && sun >= 2)) {
-                cout << "The slot is already full "<< " Please choose another day!\n";
-            } else {
+        if (dayChoice > 0 && dayChoice <= availableDays.size())
+        {
+            if ((availableDays[dayChoice - 1].first == "Monday:" && mon >= 2) ||
+                (availableDays[dayChoice - 1].first == "Tuesday:" && tue >= 2) ||
+                (availableDays[dayChoice - 1].first == "Wednesday:" && wed >= 2) ||
+                (availableDays[dayChoice - 1].first == "Thursday:" && thu >= 2) ||
+                (availableDays[dayChoice - 1].first == "Friday:" && fri >= 2) ||
+                (availableDays[dayChoice - 1].first == "Saturday:" && sat >= 2) ||
+                (availableDays[dayChoice - 1].first == "Sunday:" && sun >= 2))
+            {
+                cout << "The slot is already full " << " Please choose another day!\n";
+            }
+            else
+            {
                 cout << "You have chosen " << availableDays[dayChoice - 1].first << " " << availableDays[dayChoice - 1].second << " with Professor " << ticket.professor << "." << endl;
-                ticket.scheduledMeeting = availableDays[dayChoice - 1].first + " " + availableDays[dayChoice - 1].second;  // Store the chosen day
+                ticket.scheduledMeeting = availableDays[dayChoice - 1].first + " " + availableDays[dayChoice - 1].second; // Store the chosen day
                 break;
             }
-        } else {
+        }
+        else
+        {
             cout << "Invalid selection. Please enter a number between 1 and " << availableDays.size() << ": ";
         }
     }
 }
-
 
 void enroll()
 {
@@ -1586,10 +1839,12 @@ void enroll()
     studentsInterface();
 }
 
-vector<string> formatMessage(const string& msg, size_t maxLength) {
+vector<string> formatMessage(const string &msg, size_t maxLength)
+{
     vector<string> formattedMessage;
     size_t start = 0;
-    while (start < msg.length()) {
+    while (start < msg.length())
+    {
         size_t end = min(start + maxLength, msg.length());
         formattedMessage.push_back(msg.substr(start, end - start));
         start = end;
@@ -1664,13 +1919,14 @@ void Messenger()
                 clearscreen();
                 ofstream chat(ticket.studentName + "_" + ticket.professor + ".txt", ios::app);
                 if (chat.is_open())
-                {   
-                    chat<<"----------------------------------\n";
-                    chat<<"From: "<<ticket.studentName<<endl;
+                {
+                    chat << "----------------------------------\n";
+                    chat << "From: " << ticket.studentName << endl;
                     chat << "To: " << ticket.professor << "" << endl;
                     chat << "\n";
                     vector<string> formattedMessage = formatMessage(message.msg, 30);
-                    for (const string& line : formattedMessage) {
+                    for (const string &line : formattedMessage)
+                    {
                         chat << line << "\n";
                     }
                     chat << "----------------------------------\n";
@@ -1739,12 +1995,13 @@ void Messenger()
                 ofstream schat(ticket.studentName + "_" + ticket.professor + ".txt", ios::app);
                 if (schat.is_open())
                 {
-                    schat<<"----------------------------------\n";
-                    schat <<"From: " <<ticket.professor << endl;
+                    schat << "----------------------------------\n";
+                    schat << "From: " << ticket.professor << endl;
                     schat << "To: " << ticket.studentName << "" << endl;
                     schat << "\n";
                     vector<string> formattedMessage = formatMessage(message.msg, 30);
-                    for (const string& line : formattedMessage) {
+                    for (const string &line : formattedMessage)
+                    {
                         schat << line << "\n";
                     }
                     schat << "----------------------------------\n";
