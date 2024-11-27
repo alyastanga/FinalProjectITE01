@@ -100,6 +100,7 @@ void analytics();
 void profSched();
 void chooseSched();
 void viewSched();
+void changSched();
 bool isDayOfWeek(const std::string &line, const Sched &sched);
 void backs(string back);
 void cont();
@@ -168,6 +169,7 @@ void clearscreen()
     system("clear"); // Unix/Linux/Mac
 #endif
 }
+
 void backs(string back)
 {
     if (back == "q")
@@ -1701,7 +1703,7 @@ void chooseSched()
         return;
     }
 
-    vector<pair<string, int>> days;
+    vector<pair<string, int> > days;
     days.push_back(make_pair("Monday:", 1));
     days.push_back(make_pair("Tuesday:", 2));
     days.push_back(make_pair("Wednesday:", 3));
@@ -1712,7 +1714,7 @@ void chooseSched()
 
     // string line;
     bool foundProfSection = false;
-    vector<pair<string, string>> availableDays; // To hold day and time slot pairs
+    vector<pair<string, string> > availableDays; // To hold day and time slot pairs
 
     while (getline(profss, line))
     {
@@ -2056,12 +2058,14 @@ void viewSched()
     cout << "=================================================" << endl;
     cout << "Do you want to change your current schedule?(Y/N) ";
     cin >> changeSched;
+    cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Clear the newline character
+
 
     switch (changeSched)
     {
     case 'Y':
     case 'y':
-
+        changSched();
         break;
     default:
         break;
@@ -2070,4 +2074,83 @@ void viewSched()
     profs.close();
     cont();
     professorsInterface();
+}
+
+void changSched()
+{
+    // Close any existing file handles first
+    ifstream inputFile("Schedule.txt");
+    if (!inputFile.is_open())
+    {
+        cerr << "Error: Could not open the file.\n";
+        return;
+    }
+    vector<string> modifiedSchedule;
+    string line, professorName = ticket.professor;
+    bool isTargetProfessor = false;
+    // Read the entire file
+    while (getline(inputFile, line))
+    {
+        if (line == professorName)
+        {
+            isTargetProfessor = true;
+            modifiedSchedule.push_back(line);
+            continue;
+        }
+        if (isTargetProfessor)
+        {
+            if (line.empty())
+            {
+                isTargetProfessor = false;
+                modifiedSchedule.push_back(line);
+                continue;
+            }
+            size_t colonPos = line.find(':');
+            if (colonPos != string::npos)
+            {
+                string day = line.substr(0, colonPos);
+                string newTime;
+                // Prompt for new time
+                while (true)
+                {
+                    cout << "Enter new schedule for Professor " << professorName << " on " << day << ": ";
+                    getline(cin, newTime);
+                    // Trim whitespace
+                    newTime.erase(0, newTime.find_first_not_of(" \t"));
+                    newTime.erase(newTime.find_last_not_of(" \t") + 1);
+                    // Validate input (not empty and not just whitespace)
+                    if (!newTime.empty())
+                        break;
+                    cout << "Invalid input. Please enter a valid schedule.\n";
+                }
+                // Replace the time after the colon
+                line.replace(colonPos + 2, string::npos, newTime);
+                modifiedSchedule.push_back(line);
+            }
+            else
+            {
+                modifiedSchedule.push_back(line);
+            }
+        }
+        else
+        {
+            modifiedSchedule.push_back(line);
+        }
+    }
+    // Close the input file
+    inputFile.close();
+    // Write modified schedule back to file
+    ofstream outputFile("Schedule.txt");
+    if (!outputFile.is_open())
+    {
+        cerr << "Error: Could not open file for writing.\n";
+        return;
+    }
+    // Write modified schedule to file
+    for (const auto &scheduleLine : modifiedSchedule)
+    {
+        outputFile << scheduleLine << '\n';
+    }
+    outputFile.close();
+    cout << "Schedule updated successfully.\n";
 }
