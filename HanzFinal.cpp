@@ -1,4 +1,5 @@
 #include <iostream>
+#include <utility>
 #include <fstream>
 #include <string>
 #include <cmath>
@@ -30,6 +31,7 @@ void resolveTicket();
 void viewTickets();
 void studentsInterface();
 void professorsInterface();
+void rateResolvedTicket();
 void notifTickets();
 void Messenger();
 void enroll();
@@ -46,6 +48,7 @@ void profSched();
 void chooseProf();
 void chooseDay();
 void viewSched();
+void changSched();
 bool isDayOfWeek(const std::string &line, const Sched &sched);
 
 
@@ -226,8 +229,10 @@ void registerUser()
     {
         reg << user.getUsername() << setw(10) << user.getPassword() << setw(10) << user.getDepartment() << setw(10) << user.getRole() << setw(10) << user.getSid() << endl;
         reg.close();
+        cout << "\nPress Enter to continue...";
+        cin.ignore();
+        cin.get();
         clearscreen();
-        cout << "Registration Successful!\n";
         main();
     }
 }
@@ -319,6 +324,11 @@ void retrievePassword()
     {
         cout << "Username not found!\n";
     }
+    cout << "\nPress Enter to continue...";
+    cin.ignore();
+    cin.get();
+    clearscreen();
+    main();
 }
 
 void studentsInterface()
@@ -333,7 +343,7 @@ void studentsInterface()
         notifTickets();
         cout << "\n";
         cout << "Option: \n\n";
-        cout << " (1) Create Ticket\n (2) View Tickets\n (3) Enroll\n (4) Message \n (5) Logout\n (6) Logout and Exit\n";
+        cout << " (1) Create Ticket\n (2) View Tickets\n (3) Enroll\n (4) Message \n (5) Rate Resolved Ticket \n (6) Logout\n (7) Logout and Exit\n";
         cout << "\nOption(#): ";
         cin >> action;
 
@@ -370,11 +380,16 @@ void studentsInterface()
         studentsInterface();
         break;
     case 5:
+        clearscreen();
+        rateResolvedTicket();
+        studentsInterface();
+        break;
+    case 6:
         cout << "Logging out...\n";
         clearscreen();
         main();
         break;
-    case 6:
+    case 7:
         clearscreen();
         cout << "Thank you for using our system!\n";
         exit(0);
@@ -385,6 +400,161 @@ void studentsInterface()
         studentsInterface();
         break;
     }
+}
+
+void rateResolvedTicket() {
+    string ticketId;
+    string studentName;
+
+    cout << "Enter your ticket ID: ";
+    cin >> ticketId;
+    cin.ignore();  // Clear the newline character left in the input buffer
+
+    cout << "Enter your name: ";
+    getline(cin, studentName);  // Use getline to allow spaces in the name
+
+    ifstream studentFile(studentName + "_tickets.txt");
+    ofstream tempFile("temp_student_tickets.txt");  // Temporary file for modified data
+    bool ticketFound = false;
+    int studentRating = 0;  // Variable to store the rating
+    string ratingDescription;  // Variable to store the rating description
+
+    if (studentFile.is_open() && tempFile.is_open()) {
+        string line;
+        while (getline(studentFile, line)) {
+            if (line.find("Ticket ID: " + ticketId) != string::npos) {  // If the ticket ID matches
+                ticketFound = true;
+                tempFile << line << endl;  // Write the ticket ID line
+                getline(studentFile, line);  // Read the next line (Concern)
+                tempFile << line << endl;  // Write the Concern line
+                getline(studentFile, line);  // Read the next line (Date)
+                tempFile << line << endl;  // Write the Date line
+                getline(studentFile, line);  // Read the next line (Professor)
+                tempFile << line << endl;
+                getline(studentFile, line);  // Read the next line (Professor)
+                tempFile << line << endl;  // Write the Professor line
+                getline(studentFile, line);  // Read the next line (Status)
+                tempFile << line << endl;
+                getline(studentFile, line);
+                // Check if the ticket is resolved before allowing the student to rate
+                if (line.find("resolved") != string::npos) {
+                    // Display the rating scale and explanations
+                    cout << "Please rate the resolution of this ticket (1 = Poor, 5 = Excellent):\n";
+                    cout << "1 = Poor\n";
+                    cout << "2 = Fair\n";
+                    cout << "3 = Good\n";
+                    cout << "4 = Very Good\n";
+                    cout << "5 = Excellent\n";
+                    cout << "Enter your rating (1-5): ";
+                    cin >> studentRating;
+
+                    // Validate rating input
+                    while (studentRating < 1 || studentRating > 5) {
+                        cout << "Invalid input. Please enter a rating between 1 and 5: ";
+                        cin >> studentRating;
+                    }
+
+                    // Set the corresponding rating description
+                    switch (studentRating) {
+                        case 1:
+                            ratingDescription = "Poor";
+                            break;
+                        case 2:
+                            ratingDescription = "Fair";
+                            break;
+                        case 3:
+                            ratingDescription = "Good";
+                            break;
+                        case 4:
+                            ratingDescription = "Very Good";
+                            break;
+                        case 5:
+                            ratingDescription = "Excellent";
+                            break;
+                        default:
+                            ratingDescription = "Unknown";
+                            break;
+                    }
+
+                    // Add the rating and description to the student ticket file
+                    tempFile << "Student Rating: " << studentRating << "/5 (" << ratingDescription << ")" << endl;  // Add rating and description
+                    cout << "Thank you for your feedback! Your rating of " << studentRating << "/5 (" << ratingDescription << ") has been recorded.\n";
+                } else {
+                    cout << "This ticket has not been resolved yet. You can rate it once it is resolved.\n";
+                    tempFile << line << endl;  // If not resolved, don't rate
+                }
+            } else {
+                tempFile << line << endl;  // Write the rest of the lines to the temp file
+            }
+        }
+
+        studentFile.close();
+        tempFile.close();
+
+        if (remove((studentName + "_tickets.txt").c_str()) != 0) {
+            perror("Error deleting old file");
+        } else if (rename("temp_student_tickets.txt", (studentName + "_tickets.txt").c_str()) != 0) {
+            perror("Error renaming new file");
+        } else {
+            if (!ticketFound) {
+                cout << "Ticket ID " << ticketId << " not found.\n";
+            }
+        }
+    } else {
+        cout << "Error opening student ticket file.\n";
+    }
+
+    // Now, update the professor's file with the student's rating if the ticket is resolved
+    if (ticketFound) {
+        cout << "Updating professor's file...\n";  // Debugging message
+        ifstream professorFile(ticket.professor + "_tickets.txt");  // Open professor's ticket file
+        ofstream professorTempFile("temp_professor_tickets.txt");  // Temp file for professor's tickets
+        bool professorTicketFound = false;
+
+        if (professorFile.is_open() && professorTempFile.is_open()) {
+            string line;
+            while (getline(professorFile, line)) {
+                cout << line << endl;  // Debugging message
+                if (line.find("Ticket ID: " + ticketId) != string::npos) {  // If the ticket ID matches
+                    professorTicketFound = true;
+                    cout << "Ticket ID matched, adding rating...\n";  // Debugging message
+                    professorTempFile << line << endl;  // Write the ticket ID line
+
+                    // Copy the other lines related to the ticket, up to the Status line
+                    for (int i = 0; i < 7; ++i) {
+                        getline(professorFile, line);
+                        professorTempFile << line << endl;
+                    }
+
+                    // After all ticket details, add the rating
+                    professorTempFile << "Student Rating: " << studentRating << "/5 (" << ratingDescription << ")" << endl;
+                    cout << "Rating added to professor's file.\n";  // Debugging message
+                } else {
+                    professorTempFile << line << endl;  // Write the rest of the lines to the temp file
+                }
+            }
+            professorFile.close();
+            professorTempFile.close();
+
+            // Replace the original professor ticket file with the updated file
+            if (remove((ticket.professor + "_tickets.txt").c_str()) != 0) {
+                perror("Error deleting professor's old file");
+            } else if (rename("temp_professor_tickets.txt", (ticket.professor + "_tickets.txt").c_str()) != 0) {
+                perror("Error renaming new professor file");
+            } else {
+                cout << "Professor's file successfully updated.\n";  // Debugging message
+            }
+        } else {
+            cout << "Error opening professor's ticket file.\n";
+        }
+    }
+
+    // Ask user to press Enter to continue
+    cout << "\nPress Enter to continue...";
+    cin.ignore();
+    cin.get();
+    clearscreen();
+    
 }
 
 void professorsInterface()
@@ -398,7 +568,7 @@ void professorsInterface()
         notifTickets();
         cout << "\n";
         cout << "Option: \n\n";
-        cout << " (1) View Ticket\n (2) Resolve Tickets\n (3) View Analytics \n (4) View Schedule \n (5) Message \n (6) Logout\n (7) Logout and Exit\n";
+        cout << " (1) View Ticket\n (2) Resolve Tickets\n (3) View Analytics \n (4) View Schedule \n (5) Message \n (6) Logout\n (7) Exit\n";
         cout << "\nOption(#): ";
         cin >> action;
         cout << "\n";
@@ -960,13 +1130,16 @@ void notifTickets()
 void analytics() {
     int A1 = 0, A2 = 0, A3 = 0, A4 = 0, A5 = 0, A6 = 0, A7 = 0, A8 = 0, A9 = 0, A10 = 0;
     vector<int> durations; // To track resolution times
-    float totPercent;
+    vector<int>ratings;
+    float totPercent = 0.0f;
     string professorFile = ticket.professor + "_tickets.txt";
     ifstream analytics(professorFile);
     string line, createdDate, resolvedDate;
 
     bool hasResolvedTickets = false;
     int totalTickets = 0;
+    int totalRating = 0;
+    int ratingCount = 0;
 
     if (analytics.is_open()) {
         while (getline(analytics, line)) {
@@ -1003,12 +1176,25 @@ void analytics() {
                 if (resolvedDate != "Pending") {
                     hasResolvedTickets = true;
                     struct tm tmCreated = {}, tmResolved = {};
-                    strptime(createdDate.c_str(), "%Y-%m-%d %H:%M:%S", &tmCreated);
-                    strptime(resolvedDate.c_str(), "%Y-%m-%d %H:%M:%S", &tmResolved);
+                    #ifdef _WIN32
+                        strftime(createdDate.data(), createdDate.size(),"%Y-%m-%d %H:%M:%S", &tmCreated);
+                        strftime(resolvedDate.data(), resolvedDate.size(),"%Y-%m-%d %H:%M:%S", &tmResolved);
+                    
+                    #else
+                        strptime(createdDate.c_str(), "%Y-%m-%d %H:%M:%S", &tmCreated);
+                        strptime(resolvedDate.c_str(), "%Y-%m-%d %H:%M:%S", &tmResolved);
+                    #endif
                     time_t tCreated = mktime(&tmCreated);
                     time_t tResolved = mktime(&tmResolved);
                     durations.push_back(difftime(tResolved, tCreated) / 60);
                 }
+            }
+            if (line.find("Student Rating:") != string::npos) {
+                size_t pos = line.find(":") + 2; // Skip past "Student Rating: "
+                int rating = stoi(line.substr(pos, 1)); // Extract the rating number (e.g., "4" from "4/5")
+                ratings.push_back(rating);
+                totalRating += rating;
+                ratingCount++;
             }
         }
         analytics.close();
@@ -1028,9 +1214,9 @@ void analytics() {
     }
 
     // Print the analytics
-    cout << "\n================================================================================\n";
-    cout << setw(25) << " " << "Concern Analytics\n\n";
-    cout << left << setw(50) << "Concern Categories" << "Frequency   Percentage\n";
+    cout << "\n===============================================================================\n";
+    cout << setw(33) << " " << "Concern Analytics\n\n";
+    cout << left << setw(50) << "Concern Categories:" << "Frequency   Percentage\n";
     
     // Store category names in an array for cleaner code
     string categories[] = {
@@ -1060,7 +1246,9 @@ void analytics() {
             totPercent += percentages[i];
         }
     }
-    cout << left <<  setw(54) << "Total Tickets Created: " << setw(10) << totalTickets << fixed << setprecision(1) << setw(2) << totPercent << "%" << endl;
+    cout << left <<  setw(54) << "Total Tickets Created: " << setw(10) << totalTickets << fixed << setprecision(1) << setw(2) << totPercent << "%";
+    cout.fill('-');cout.width(80);cout << "\n";cout.fill(' ');
+    cout << endl;
 
     // Calculate and display average resolution time
     if (!durations.empty()) {
@@ -1076,6 +1264,16 @@ void analytics() {
     } else {
         cout << "\nNo resolved tickets yet.\n";
     }
+    cout.fill('-');cout.width(80);cout << "\n";cout.fill(' ');
+    cout<<endl;
+
+    if (ratingCount > 0) {
+        float avgRating = static_cast<float>(totalRating) / ratingCount;
+        cout << "\nAverage Professor Rating: " << fixed << setprecision(2) << avgRating << "/5\n\n";
+    } else {
+        cout << "\nNo ratings yet.\n";
+    }
+
     cout << "================================================================================\n";
     cout << "\nPress Enter to continue...";
     cin.ignore();
@@ -1503,12 +1701,13 @@ void viewSched()
     cout << "=================================================" << endl;
     cout << "Do you want to change your current schedule?(Y/N) ";
     cin >> changeSched;
+    cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Clear the newline character
 
     switch (changeSched)
     {
     case 'Y':
     case 'y':
-
+        changSched();
         break;
     default:
         break;
@@ -1516,8 +1715,87 @@ void viewSched()
 
     profs.close();
     cout << "Press Enter to continue...";
-    cin.ignore();
     cin.get();
     clearscreen();
     professorsInterface();
+}
+
+
+void changSched()
+{
+    // Close any existing file handles first
+    ifstream inputFile("Schedule.txt");
+    if (!inputFile.is_open())
+    {
+        cerr << "Error: Could not open the file.\n";
+        return;
+    }
+    vector<string> modifiedSchedule;
+    string line, professorName = ticket.professor;
+    bool isTargetProfessor = false;
+    // Read the entire file
+    while (getline(inputFile, line))
+    {
+        if (line == professorName)
+        {
+            isTargetProfessor = true;
+            modifiedSchedule.push_back(line);
+            continue;
+        }
+        if (isTargetProfessor)
+        {
+            if (line.empty())
+            {
+                isTargetProfessor = false;
+                modifiedSchedule.push_back(line);
+                continue;
+            }
+            size_t colonPos = line.find(':');
+            if (colonPos != string::npos)
+            {
+                string day = line.substr(0, colonPos);
+                string newTime;
+                // Prompt for new time
+                while (true)
+                {
+                    cout << "Enter new schedule for Professor " << professorName << " on " << day << ": ";
+                    getline(cin, newTime);
+                    // Trim whitespace
+                    newTime.erase(0, newTime.find_first_not_of(" \t"));
+                    newTime.erase(newTime.find_last_not_of(" \t") + 1);
+                    // Validate input (not empty and not just whitespace)
+                    if (!newTime.empty())
+                        break;
+                    cout << "Invalid input. Please enter a valid schedule.\n";
+                }
+                // Replace the time after the colon
+                line.replace(colonPos + 2, string::npos, newTime);
+                modifiedSchedule.push_back(line);
+            }
+            else
+            {
+                modifiedSchedule.push_back(line);
+            }
+        }
+        else
+        {
+            modifiedSchedule.push_back(line);
+        }
+    }
+    // Close the input file
+    inputFile.close();
+    // Write modified schedule back to file
+    ofstream outputFile("Schedule.txt");
+    if (!outputFile.is_open())
+    {
+        cerr << "Error: Could not open file for writing.\n";
+        return;
+    }
+    // Write modified schedule to file
+    for (const auto &scheduleLine : modifiedSchedule)
+    {
+        outputFile << scheduleLine << '\n';
+    }
+    outputFile.close();
+    cout << "Schedule updated successfully.\n";
 }
