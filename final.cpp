@@ -1,3 +1,5 @@
+//C++ Source Code of the Ticketing System Project of Group 2
+
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -103,6 +105,7 @@ void viewSched();
 bool isDayOfWeek(const std::string &line, const Sched &sched);
 void backs(string back);
 void cont();
+void changSched();
 
 int main()
 {
@@ -412,7 +415,7 @@ void studentsInterface()
             cin.clear();                                         // Clear the error flag
             cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Discard invalid input
             clearscreen();
-            cout << "\nInvalid input! Please enter a number between 1 and 3.\n";
+            cout << "\nInvalid input! Please enter a number between 1 and 7.\n";
         }
         else
         {
@@ -1344,7 +1347,7 @@ void analytics()
     int A1 = 0, A2 = 0, A3 = 0, A4 = 0, A5 = 0, A6 = 0, A7 = 0, A8 = 0, A9 = 0, A10 = 0;
     vector<int> durations; // To track resolution times
     vector<int> ratings;
-    float totPercent;
+    float totPercent = 0.0f;
     string professorFile = ticket.professor + "_tickets.txt";
     ifstream analytics(professorFile);
     string line, createdDate, resolvedDate;
@@ -1913,6 +1916,10 @@ void Messenger()
                 studentsInterface();
                 break;
             }
+            else if (exit.empty())
+            {
+                cout << "Message cannot be empty. Please enter a valid message.\n";
+            }
             else
             {
                 message.msg = exit;
@@ -1920,16 +1927,8 @@ void Messenger()
                 ofstream chat(ticket.studentName + "_" + ticket.professor + ".txt", ios::app);
                 if (chat.is_open())
                 {
-                    chat << "----------------------------------\n";
-                    chat << "From: " << ticket.studentName << endl;
-                    chat << "To: " << ticket.professor << "" << endl;
-                    chat << "\n";
-                    vector<string> formattedMessage = formatMessage(message.msg, 30);
-                    for (const string &line : formattedMessage)
-                    {
-                        chat << line << "\n";
-                    }
-                    chat << "----------------------------------\n";
+                     chat << setw(30) << " " << ticket.studentName << ":" << endl;
+                    chat << setw(30) << " " << message.msg << endl;
                     chat.close();
                 }
             }
@@ -1988,6 +1987,10 @@ void Messenger()
                 studentsInterface();
                 break;
             }
+            else if (exit.empty())
+            {
+                cout << "Message cannot be empty. Please enter a valid message.\n";
+            }
             else
             {
                 message.msg = exit;
@@ -1995,18 +1998,10 @@ void Messenger()
                 ofstream schat(ticket.studentName + "_" + ticket.professor + ".txt", ios::app);
                 if (schat.is_open())
                 {
-                    schat << "----------------------------------\n";
-                    schat << "From: " << ticket.professor << endl;
-                    schat << "To: " << ticket.studentName << "" << endl;
-                    schat << "\n";
-                    vector<string> formattedMessage = formatMessage(message.msg, 30);
-                    for (const string &line : formattedMessage)
-                    {
-                        schat << line << "\n";
-                    }
-                    schat << "----------------------------------\n";
-
+                    schat << ticket.professor << ":" << endl;
+                    schat << message.msg << endl;
                     schat.close();
+
                 }
             }
         } while (exit != "q" && exit != "Q");
@@ -2056,13 +2051,13 @@ void viewSched()
     char changeSched;
     cout << "=================================================" << endl;
     cout << "Do you want to change your current schedule?(Y/N) ";
-    cin >> changeSched;
+    cin >> changeSched; cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
     switch (changeSched)
     {
     case 'Y':
     case 'y':
-
+        changSched();
         break;
     default:
         break;
@@ -2072,3 +2067,84 @@ void viewSched()
     cont();
     professorsInterface();
 }
+
+void changSched()
+{
+    // Close any existing file handles first
+    ifstream inputFile("Schedule.txt");
+    if (!inputFile.is_open())
+    {
+        cerr << "Error: Could not open the file.\n";
+        return;
+    }
+    vector<string> modifiedSchedule;
+    string line, professorName = ticket.professor;
+    bool isTargetProfessor = false;
+    // Read the entire file
+    while (getline(inputFile, line))
+    {
+        if (line == professorName)
+        {
+            isTargetProfessor = true;
+            modifiedSchedule.push_back(line);
+            continue;
+        }
+        if (isTargetProfessor)
+        {
+            if (line.empty())
+            {
+                isTargetProfessor = false;
+                modifiedSchedule.push_back(line);
+                continue;
+            }
+            size_t colonPos = line.find(':');
+            if (colonPos != string::npos)
+            {
+                string day = line.substr(0, colonPos);
+                string newTime;
+                // Prompt for new time
+                while (true)
+                {
+                    cout << "Enter new schedule for Professor " << professorName << " on " << day << ": ";
+                    getline(cin, newTime);
+                    // Trim whitespace
+                    newTime.erase(0, newTime.find_first_not_of(" \t"));
+                    newTime.erase(newTime.find_last_not_of(" \t") + 1);
+                    // Validate input (not empty and not just whitespace)
+                    if (!newTime.empty())
+                        break;
+                    cout << "Invalid input. Please enter a valid schedule.\n";
+                }
+                // Replace the time after the colon
+                line.replace(colonPos + 2, string::npos, newTime);
+                modifiedSchedule.push_back(line);
+            }
+            else
+            {
+                modifiedSchedule.push_back(line);
+            }
+        }
+        else
+        {
+            modifiedSchedule.push_back(line);
+        }
+    }
+    // Close the input file
+    inputFile.close();
+    // Write modified schedule back to file
+    ofstream outputFile("Schedule.txt");
+    if (!outputFile.is_open())
+    {
+        cerr << "Error: Could not open file for writing.\n";
+        return;
+    }
+    // Write modified schedule to file
+    for (const auto &scheduleLine : modifiedSchedule)
+    {
+        outputFile << scheduleLine << '\n';
+    }
+    outputFile.close();
+    cout << "Schedule updated successfully.\n";
+}
+
+
