@@ -1353,7 +1353,7 @@ void analytics()
     string line, createdDate, resolvedDate;
 
     bool hasResolvedTickets = false;
-    int totalTickets = 0;
+    int totalTickets = 0, resolvedCount = 0, unresolvedCount = 0;
     int totalRating = 0;
     int ratingCount = 0;
 
@@ -1364,6 +1364,14 @@ void analytics()
             if (line.find("Ticket ID:") != string::npos)
             {
                 totalTickets++; // Increment totalTickets only when a new ticket is encountered
+            }
+            if (line.find("Status: resolved") != string::npos)
+            {
+                resolvedCount++;
+            }
+            else if (line.find("Status: open") != string::npos)
+            {
+                unresolvedCount++;
             }
             if (line.find("Concern: Grades and Assessments") != string::npos)
                 A1++;
@@ -1421,6 +1429,7 @@ void analytics()
     // Calculate the total ticket count and percentages
     int totalTix = A1 + A2 + A3 + A4 + A5 + A6 + A7 + A8 + A9 + A10;
     float percentages[10] = {0};
+    float resolvedPercent = 0.0f, unresolvedPercent = 0.0f;
 
     if (totalTix > 0)
     {
@@ -1437,6 +1446,9 @@ void analytics()
                                                  : A10;
             percentages[i] = (static_cast<float>(count) / totalTix) * 100;
         }
+        // Calculate percentages for resolved and unresolved tickets
+        resolvedPercent = (static_cast<float>(resolvedCount) / totalTickets) * 100;
+        unresolvedPercent = (static_cast<float>(unresolvedCount) / totalTickets) * 100;
     }
 
     // Print the analytics
@@ -1476,11 +1488,14 @@ void analytics()
         }
     }
     cout << left << setw(54) << "Total Tickets Created: " << setw(10) << totalTickets << fixed << setprecision(1) << setw(2) << totPercent << "%" << endl;
+    cout << left << setw(54) << "Resolved Tickets: " << setw(10) << resolvedCount << fixed << setprecision(1) << setw(2) << resolvedPercent << "%\n";
+    cout << left << setw(54) << "Unresolved Tickets: " << setw(10)<< unresolvedCount << fixed << setprecision(1) << setw(2) << unresolvedPercent << "%\n";
     cout.fill('-');
     cout.width(80);
     cout << "\n";
     cout.fill(' ');
     cout << endl;
+
     // Calculate and display average resolution time
     if (!durations.empty())
     {
@@ -2146,5 +2161,3 @@ void changSched()
     outputFile.close();
     cout << "Schedule updated successfully.\n";
 }
-
-
