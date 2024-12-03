@@ -4,12 +4,12 @@
 #include <cmath>
 #include <cstdlib>
 #include <ctime>
-#include <time.h>
 #include <limits>
 #include <iomanip>
 #include <vector>
 #include <algorithm>
 #include <numeric>
+#include <utility>
 using namespace std;
 
 struct Ticket
@@ -31,6 +31,10 @@ struct Sched
     }
     string time[7];
 };
+vector<Ticket> tickets;  // Holds all the tickets
+vector<string> users;    // Holds usernames for users (used in a simple way for demo)
+
+bool isAdmin = false; 
 
 void registerUser();
 void login();
@@ -45,6 +49,9 @@ void rateResolvedTicket();
 void notifTickets();
 void Messenger();
 void enroll();
+void adminInterface();
+void viewAllTickets();
+void viewAnalytics();
 void clearscreen()
 {
 #ifdef _WIN32
@@ -58,6 +65,8 @@ void profSched();
 void chooseProf();
 void chooseDay();
 void viewSched();
+bool isDayOfWeek(const std::string &line, const Sched &sched);
+
 
 int main()
 {
@@ -71,7 +80,7 @@ int main()
     while (true)
     {
         cout << "\nMenu: \n";
-        cout << "\n (1) Login\n (2) Register\n (3) Forgot Password\n (4) Exit\n";
+        cout << "\n (1) Login\n (2) Register\n (3) Forgot Password\n (4) Exit\n (5) Admin\n";
         cout << "\nMenu(#): ";
         cin >> choice;
 
@@ -106,6 +115,10 @@ int main()
         clearscreen();
         cout << "Thank you for using our system!\n";
         exit(0);
+        break;
+    case 5:
+        clearscreen();
+        adminInterface();
         break;
     default:
         clearscreen();
@@ -304,14 +317,14 @@ void login()
 void retrievePassword()
 {
     int count = 0;
-    string fuse, user, pass, role, sid;
+    string fuse, user, pass, role, sid, dep;
     cout << "Enter username: ";
     cin >> fuse;
 
     ifstream ret("accounts.txt");
     if (ret.is_open())
     {
-        while (ret >> user >> pass >> role >> sid)
+        while (ret >> user >> pass >> dep >> role >> sid)
         {
             if (user == fuse)
             {
@@ -331,6 +344,41 @@ void retrievePassword()
     }
 }
 
+void adminInterface()
+{
+    int choice;
+    do
+    {
+                 cout << "\nAdmin Dashboard\n";
+        cout << "1. View All Tickets\n";
+        cout << "2. Resolve/Close Ticket\n";
+        cout << "3. View Analytics\n";
+        cout << "4. Log Out\n";
+        cout << "Enter choice: ";
+        cin >> choice;
+
+        switch(choice) {
+            case 1:
+                viewTickets();
+                break;
+            case 2:
+                resolveTicket();
+                break;
+            case 3:
+                analytics();
+                break;
+            case 4:
+                cout << "Logging out...\n";
+                isAdmin = false;  // Log out the admin
+                break;
+            default:
+                cout << "Invalid option. Please try again.\n";
+        }
+    } while (choice != 6);
+}
+   
+
+
 void studentsInterface()
 {
     int action;
@@ -343,7 +391,7 @@ void studentsInterface()
         notifTickets();
         cout << "\n";
         cout << "Option: \n\n";
-        cout << " (1) Create Ticket\n (2) View Tickets\n (3) Enroll\n (4) Message \n (5) Rate Resolved Ticket\n (6) Logout\n (7) Logout and Exit\n";
+        cout << " (1) Create Ticket\n (2) View Tickets\n (3) Enroll\n (4) Message \n (5) Rate Resolved Ticket\n (6) Logout\n (7) Exit\n";
         cout << "\nOption(#): ";
         cin >> action;
 
@@ -412,7 +460,7 @@ void professorsInterface()
         notifTickets();
         cout << "\n";
         cout << "Option: \n\n";
-        cout << " (1) View Ticket\n (2) Resolve Tickets\n (3) View Analytics \n (4) View Schedule \n (5) Message \n (6) Logout\n (7) Logout and Exit\n";
+        cout << " (1) View Ticket\n (2) Resolve Tickets\n (3) View Analytics \n (4) View Schedule \n (5) Message \n (6) Logout\n (7) Exit\n";
         cout << "\nOption(#): ";
         cin >> action;
         cout << "\n";
@@ -678,10 +726,10 @@ void addTickets()
     {
         cout << "Unable to open file.\n";
     }
-    cout << "Press 'q' if you want to create another ticket(Press any key if not): ";
+    cout << "Press 'y' if you want to create another ticket(Press any key if not): ";
     char choice;
     cin >> choice;
-    if (choice == 'q' || choice == 'Q')
+    if (choice == 'Y' || choice == 'y')
     {
         clearscreen();
         addTickets(); 
@@ -839,10 +887,10 @@ void resolveTicket()
         cout << "Error opening student's file.\n";
     }
 
-    cout << "Press 'q' if you want to resolve another ticket(Press any key if not): ";
+    cout << "Press 'Y' if you want to resolve another ticket(Press any key if not): ";
     char choice;
     cin >> choice;
-    if (choice == 'q' || choice == 'Q')
+    if (choice == 'y' || choice == 'Y')
     {
         clearscreen();
         resolveTicket(); 
@@ -1128,6 +1176,7 @@ void analytics() {
     int A1 = 0, A2 = 0, A3 = 0, A4 = 0, A5 = 0, A6 = 0, A7 = 0, A8 = 0, A9 = 0, A10 = 0;
     vector<int> durations; // To track resolution times
     vector<int>ratings;
+    float totPercent;
     string professorFile = ticket.professor + "_tickets.txt";
     ifstream analytics(professorFile);
     string line, createdDate, resolvedDate;
@@ -1172,21 +1221,13 @@ void analytics() {
                 if (resolvedDate != "Pending") {
                     hasResolvedTickets = true;
                     struct tm tmCreated = {}, tmResolved = {};
-                    #ifdef _WIN32
-                        strftime(createdDate.data(), createdDate.size(),"%Y-%m-%d %H:%M:%S", &tmCreated);
-                        strftime(resolvedDate.data(), resolvedDate.size(),"%Y-%m-%d %H:%M:%S", &tmResolved);
-                    
-                    #else
-                        strptime(createdDate.c_str(), "%Y-%m-%d %H:%M:%S", &tmCreated);
-                        strptime(resolvedDate.c_str(), "%Y-%m-%d %H:%M:%S", &tmResolved);
-                    #endif
-                    
+                    strptime(createdDate.c_str(), "%Y-%m-%d %H:%M:%S", &tmCreated);
+                    strptime(resolvedDate.c_str(), "%Y-%m-%d %H:%M:%S", &tmResolved);
                     time_t tCreated = mktime(&tmCreated);
                     time_t tResolved = mktime(&tmResolved);
                     durations.push_back(difftime(tResolved, tCreated) / 60);
                 }
             }
-        
         if (line.find("Student Rating:") != string::npos) {
                 size_t pos = line.find(":") + 2; // Skip past "Student Rating: "
                 int rating = stoi(line.substr(pos, 1)); // Extract the rating number (e.g., "4" from "4/5")
@@ -1195,11 +1236,11 @@ void analytics() {
                 ratingCount++;
             }
         }
+
         analytics.close();
     }
 
-        
-     // Calculate the total ticket count and percentages
+    // Calculate the total ticket count and percentages
     int totalTix = A1 + A2 + A3 + A4 + A5 + A6 + A7 + A8 + A9 + A10;
     float percentages[10] = {0};
 
@@ -1235,11 +1276,20 @@ void analytics() {
     int counts[] = {A1, A2, A3, A4, A5, A6, A7, A8, A9, A10};
     for (int i = 0; i < 10; i++) {
         if (counts[i] > 0) {
-            cout << left << setw(50) << (categories[i] + ": ") 
-                 << setw(12) << counts[i] 
-                 << fixed << setprecision(1) << setw(2) << percentages[i] << "%\n";
+        cout << left << setw(54) << (categories[i] + ": ") 
+             << setw(10) << counts[i] 
+             << fixed << setprecision(1) << setw(2) << percentages[i] << "%\n";
         }
     }
+    for (int i = 0; i < 10; i++) {
+        if (percentages[i] > 0) {
+            totPercent += percentages[i];
+        }
+    }
+
+    cout << left <<  setw(54) << "Total Tickets Created: " << setw(10) << totalTickets << fixed << setprecision(1) << setw(2) << totPercent << "%" << endl;
+   
+    
     cout << "================================================================================\n";
 
 
@@ -1265,6 +1315,7 @@ void analytics() {
     }
 
     cout << "\nTotal Tickets Created: " << totalTickets << endl;
+
     cout << "================================================================================\n";
     cout << "\nPress Enter to continue...";
     cin.ignore();
@@ -1273,8 +1324,7 @@ void analytics() {
     professorsInterface();
 }
 
-void profSched()
-{
+void profSched() {
     cout << "Enter your Schedule (hh:mm[in] - hh:mm[out]):\n";
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
     for (int i = 0; i < 7; ++i)
@@ -1286,7 +1336,7 @@ void profSched()
     ofstream pSched("Schedule.txt", ios::app);
     if (pSched.is_open())
     {
-        pSched << ticket.professor << endl;
+        pSched <<"Schedule of professor, " <<ticket.professor << endl;
         for (int i = 0; i < 7; ++i)
         {
             pSched << sched.days[i] << sched.time[i] << endl;
@@ -1378,7 +1428,7 @@ void chooseDay() {
         return;
     }
 
-    vector<pair<string, int>> days;
+    vector<pair<string, int> > days;
     days.push_back(make_pair("Monday:", 1));
     days.push_back(make_pair("Tuesday:", 2));
     days.push_back(make_pair("Wednesday:", 3));
@@ -1389,7 +1439,7 @@ void chooseDay() {
 
     string line;
     bool foundProfSection = false;
-    vector<pair<string, string>> availableDays;  // To hold day and time slot pairs
+    vector<pair<string, string> > availableDays;  // To hold day and time slot pairs
 
     while (getline(profs, line)) {
         if (line == ticket.professor) {
@@ -1438,7 +1488,6 @@ void chooseDay() {
         }
     }
 }
-
 void enroll()
 {
     cout << "\n"
